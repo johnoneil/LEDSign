@@ -9,6 +9,9 @@
 #
 #******************************************************************************
 
+import sys
+import re
+
 class Animate:
   class Random:
     In = '\x0aI\x2f'
@@ -38,9 +41,15 @@ class Format:
   NewFrame = '\x0c'
   NewLine = '\x0d'
   Halfspace = '\x82'
+  @staticmethod
+  def Linespace(space):
+    if space<0 or space > 9:
+      return Linespace(0)
+    else:
+      return '\x08' + str(space)
   class Flash:
-    Start = '\x071'
-    Stop = '\x070'
+    On = '\x071'
+    Off = '\x070'
   class AutoTypeset:
     Off = '\x1b0a'
     On = '\x1b0b'
@@ -58,6 +67,23 @@ class Format:
       Center = '\x1e0'
       Left = '\x1e1'
       Right = '\x1e2'
+  @staticmethod
+  def InterpretMarkup(text):
+    #replace entries in curly brackets by their proper protocol values
+    #e.g. 'hello {Format.NewLine} There' will insert Format.NewLine binary in place of curly brackets markup.
+    #text = (getattr(sys.modules['JetFileIIProtocol'],'Font')).n5x5 + text
+    def ReplaceMarkupTags(match):
+      code = match.group(1).strip()
+      print "code is " + code
+      if code in Markup.Registry:
+          return Markup.Registry[code]
+      return match.group(0)
+    
+    regex = re.compile(r"\{(.*?)\}")
+    #text = re.sub(regex , '', text)
+    text = re.sub(regex, ReplaceMarkupTags, text)
+    print "subbed text: " + text
+    return text
 
 class Date:
   class MMDDYY:
@@ -108,5 +134,42 @@ class Font:
       Horizontal = '\x1c\x35'
       Wave = '\x1c\x36'
       Splash = '\x1c\x37'
+
+#See section 3.1 of protocol description
+class Message:
+  class DisplayControlWithoutChecksum:
+    Header = '\x00\x00\x00\x00\x00\x01Z00'
+    Protocol = '\x06'
+    BeginCommand = '\x02'
+    WriteFile = 'A'
+    Coda = '\x04'
+    @staticmethod
+    def Create(msgId, unit_address=0, disk='E', folder='T', text='Testing, 1, 2, 3.'):
+      p = Message.DisplayControlWithoutChecksum
+      f = Format
+      m = Message
+      return p.Header + p.BeginCommand + p.WriteFile + m.MsgId2DiskFolderFilename(msgId) + p.Protocol + f.InterpretMarkup(text) + p.Coda;
+  @staticmethod
+  def MsgId2Filename(msgId):
+    #asciiMajor = 65 + int(msgId/26)
+    #asciiMinor = 65 + int(msgId % 26)
+    #return '{0:01c}{0:01c}'.format(asciiMajor,asciiMinor)
+    return str('%c%c' % (65 + int(msgId / 26), 65 + (msgId % 26)))
+  @staticmethod
+  def MsgId2DiskFolderFilename(msgId,disk='E',folder='T'):
+    return '\x0f' + disk + folder + Message.MsgId2Filename(msgId)
+ 
+#There's gotta be a better way than this...
+class Markup:
+  Registry = {
+    'Format.AutoTypeset.On' : Format.AutoTypeset.On,
+    'Format.AutoTypeset.Off' : Format.AutoTypeset.Off,
+    'Font.n5x5' : Font.n5x5,
+    'Font.n7x6' : Font.n7x6,
+    'Font.n12x7' : Font.n12x7,
+    'Font.n16x9' : Font.n16x9,
+    'Font.b22x12' : Font.b22x12,
+    'Font.b32x8' : Font.b32x8
+  } 
   
 

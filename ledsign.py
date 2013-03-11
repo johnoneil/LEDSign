@@ -17,42 +17,25 @@ from JetFileIIProtocol import Font
 from JetFileIIProtocol import Animate
 from JetFileIIProtocol import Format
 from JetFileIIProtocol import Date
+from JetFileIIProtocol import Message
+displayMsg = Message.DisplayControlWithoutChecksum
 
+import re
 
-#currently static values
+#currently static values for my display
 groupAddr = 1
 unitAddr = 1
 port = '/dev/ttyS0'
 baudRate = 19200
 widthPixels = 128
 heightPixels = 32
-filename = str('%c%c' % (65 + int(unitAddr / 26), 65 + (unitAddr % 26)))
 
-HEADER = '\x00\x00\x00\x00\x00\x01Z00'
-PROTOCOL = '\x06'
-CODA = '\x04'
-NL = '\x0d'
-SLIDE_IN = '\x0aI1'
-SLIDE_OUT = '\x0aO1'
-MOVE_LEFT_IN = '\x0a'+'I'+'\x31'
-MOVE_LEFT_OUT = '\x0a'+'O'+'\x31'
-MOVE_RIGHT_IN = '\x0a'+'I'+'\x32'
-MOVE_RIGHT_OUT = '\x0a'+'O'+'\x32'
-FONT_14X10_BOLD = '\x1aN'
-FONT_5X5 = '\x1a0'
-FONT_7X6 = '\x1a1'
-COLOR_RED = '\x1c\x31'
-COLOR_GREEN = '\x1c\x32'
-COLOR_AMBER = '\x1c\x33'
-COLOR_MIXED_WAVE = '\x1c\x36'
-SPEED_SLOWEST = '\x0f6'
-SPEED_SLOW = '\x0f5'
-SPEED_FAST = '\x0f1' 
-SPEED_FASTEST = '\x0f0' 
-data = HEADER + '\x02A\x0fET' + filename + PROTOCOL + Format.AutoTypeset.Off + SPEED_FASTEST + Animate.MoveRight.In + Animate.WipeRight.Out +  Font.n7x6 + Font.Color.Red +'1234abcd'+ Format.NewLine + Animate.MoveLeft.In + Animate.MoveLeft.Out + SPEED_SLOW + Font.n14x8 + Font.Color.Green+ Animate.Pause.Seconds(10) + Date.DayOfWeek.Abbreviation + " " + Date.Month.Abbreviation + " " + Date.Day + ", " + Date.YYYY + " " + Format.NewLine + Format.Align.Vertical.Bottom + Format.Align.Horizontal.Left + Animate.Jump.In + Animate.Jump.Out + SPEED_FASTEST + Font.Color.Amber + Font.n5x5 + 'IJKL0123' + CODA
-print str(data)
+text = '{ Format.AutoTypeset.Off}{Font.n16x9 }***********ABCDEFG12345*************'
+print text
+msg = displayMsg.Create(1,text=text);
+print msg
 
 ser = serial.Serial(port, baudRate)
-x = ser.write(data)
+x = ser.write(msg)
 ser.close()
 
