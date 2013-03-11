@@ -73,7 +73,7 @@ class Format:
     #e.g. 'hello {Format.NewLine} There' will insert Format.NewLine binary in place of curly brackets markup.
     #text = (getattr(sys.modules['JetFileIIProtocol'],'Font')).n5x5 + text
     def ReplaceMarkupTags(match):
-      code = match.group(1).strip()
+      code = match.group(1).strip().lower()
       print "code is " + code
       if code in Markup.Registry:
           return Markup.Registry[code]
@@ -102,6 +102,13 @@ class Date:
   class DayOfWeek:
     Number = '\x0b\x2a'
     Abbreviation = '\x0b\x2b'
+
+#picture handling is described in protocol section 4
+class Picture:
+  @staticmethod
+  def FromDiskFilename(filename,disk='E'):
+    return '\x14'+disk+filename
+  
 
 class Font:
   n5x5 = '\x1a0'
@@ -137,18 +144,18 @@ class Font:
 
 #See section 3.1 of protocol description
 class Message:
+  Header = '\x00\x00\x00\x00\x00\x01Z00'
+  Protocol = '\x06'
+  BeginCommand = '\x02'
+  WriteFile = 'A'
+  Coda = '\x04'
   class DisplayControlWithoutChecksum:
-    Header = '\x00\x00\x00\x00\x00\x01Z00'
-    Protocol = '\x06'
-    BeginCommand = '\x02'
-    WriteFile = 'A'
-    Coda = '\x04'
     @staticmethod
     def Create(msgId, unit_address=0, disk='E', folder='T', text='Testing, 1, 2, 3.'):
       p = Message.DisplayControlWithoutChecksum
       f = Format
       m = Message
-      return p.Header + p.BeginCommand + p.WriteFile + m.MsgId2DiskFolderFilename(msgId) + p.Protocol + f.InterpretMarkup(text) + p.Coda;
+      return m.Header + m.BeginCommand + m.WriteFile + m.MsgId2DiskFolderFilename(msgId) + m.Protocol + f.InterpretMarkup(text) + m.Coda
   @staticmethod
   def MsgId2Filename(msgId):
     #asciiMajor = 65 + int(msgId/26)
@@ -158,18 +165,37 @@ class Message:
   @staticmethod
   def MsgId2DiskFolderFilename(msgId,disk='E',folder='T'):
     return '\x0f' + disk + folder + Message.MsgId2Filename(msgId)
+
+  class Bitmap:
+    CommmandCharacter = 'I'
+    @staticmethod
+    def Create(filename,bytes,unit_address=0,disk='E'):
+      p = Message.Bitmap
+      f = Format
+      m = Message
+      return m.Header + m.BeginCommand + p.CommandCharacter + filename + bytes + m.Coda
  
 #There's gotta be a better way than this...
 class Markup:
   Registry = {
-    'Format.AutoTypeset.On' : Format.AutoTypeset.On,
-    'Format.AutoTypeset.Off' : Format.AutoTypeset.Off,
-    'Font.n5x5' : Font.n5x5,
-    'Font.n7x6' : Font.n7x6,
-    'Font.n12x7' : Font.n12x7,
-    'Font.n16x9' : Font.n16x9,
-    'Font.b22x12' : Font.b22x12,
-    'Font.b32x8' : Font.b32x8
+    'nl' : Format.NewLine,
+    'red' : Font.Color.Red,
+    'green' : Font.Color.Green,
+    'amber' : Font.Color.Amber,
+    'typesetOn' : Format.AutoTypeset.On,
+    'typesetOff' : Format.AutoTypeset.Off,
+    'nonein' : Animate.Jump.In,
+    'noneout' : Animate.Jump.Out,
+    'moveleftin' : Animate.MoveLeft.In,
+    'moveleftout' : Animate.MoveLeft.Out,
+    'moverightin' : Animate.MoveRight.In,
+    'moverightout' : Animate.MoveRight.Out,
+    '5x5' : Font.n5x5,
+    '7x6' : Font.n7x6,
+    '12x7' : Font.n12x7,
+    '16x9' : Font.n16x9,
+    'b22x12' : Font.b22x12,
+    'b32x8' : Font.b32x8
   } 
   
 
