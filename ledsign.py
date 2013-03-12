@@ -31,7 +31,7 @@ widthPixels = 128
 heightPixels = 32
 
 #text = '{ Format.AutoTypeset.Off}{Font.n16x9 }***********ABCDEFG12345*************'
-text = '{red}{5x5}{moveLeftIn}{noneOut}Testing{nl}{green}{moveRightIn}{noneOut}One{nl}{amber}{moveLeftIn}{moveRightOut}Two{nl}{red}{moveRightIn}{moveLeftOut}Three{nl}{green}Four'
+text = '{red}{5x5}{moverightin}{moveleftout}Testing{nl}{green}{moveRightIn}{noneOut}One{nl}{amber}{moveLeftIn}{moveRightOut}Two{nl}{red}{moveRightIn}{moveLeftOut}Three{nl}{green}Four'
 print text
 msg = displayMsg.Create(1,text=text);
 print msg
