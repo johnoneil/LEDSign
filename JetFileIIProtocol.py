@@ -314,6 +314,12 @@ class Markup:
     'red' : Font.Color.Red,
     'green' : Font.Color.Green,
     'amber' : Font.Color.Amber,
+    'top' : Format.Align.Vertical.Top,
+    'middle' : Format.Align.Vertical.Center,
+    'bottom' : Format.Align.Vertical.Bottom,
+    'left' : Format.Align.Horizontal.Left,
+    'center' : Format.Align.Horizontal.Center,
+    'right' : Format.Align. Horizontal.Right,
     'typeseton' : Format.AutoTypeset.On,
     'typesetoff' : Format.AutoTypeset.Off,
     'slowest' : Animate.Speed.Slow,
@@ -411,6 +417,9 @@ class Markup:
     '7x6' : Font.n7x6,
     '12x7' : Font.n12x7,
     '16x9' : Font.n16x9,
+    '22x18' : Font.n22x18,
+    'b12x7' : Font.b12x7,
+    'b16x12' : Font.b16x12,
     'b22x12' : Font.b22x12,
     'b32x8' : Font.b32x8
   } 
