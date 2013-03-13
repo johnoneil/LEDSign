@@ -91,11 +91,11 @@ class Animate:
     In = '\x0aI\x45'
     Out = '\x0aO\x45'
   class HipHop:
-    In = '\x0aI\x34'
-    Out = '\x0aO\x34'
+    In = '\x0aI\x46'
+    Out = '\x0aO\x46'
   class Radar:
-    In = '\x0aI\x34'
-    Out = '\x0aO\x34'
+    In = '\x0aI\x47'
+    Out = '\x0aO\x47'
   class ToFourSides:
     In = '\x0aI\x34'
     Out = '\x0aO\x34'
@@ -314,8 +314,8 @@ class Markup:
     'red' : Font.Color.Red,
     'green' : Font.Color.Green,
     'amber' : Font.Color.Amber,
-    'typesetOn' : Format.AutoTypeset.On,
-    'typesetOff' : Format.AutoTypeset.Off,
+    'typeseton' : Format.AutoTypeset.On,
+    'typesetoff' : Format.AutoTypeset.Off,
     'slowest' : Animate.Speed.Slow,
     'veryslow' : Animate.Speed.VerySlow,
     'slow' : Animate.Speed.Slow,
