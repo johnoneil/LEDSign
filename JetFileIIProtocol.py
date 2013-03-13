@@ -13,6 +13,14 @@ import sys
 import re
 
 class Animate:
+  class Speed:
+    Fastest = '\x0f0'
+    VeryFast = '\x0f1'
+    Fast = '\x0f2'
+    Medium = '\x0f3'
+    Slow = '\x0f4'
+    VerySlow = '\x0f5'
+    Slowest = '\x0f6'
   class Random:
     In = '\x0aI\x2f'
     Out = '\x0aO\x2f'
@@ -146,8 +154,9 @@ class Animate:
   class Pause:
     @staticmethod
     def Seconds(seconds):
+      sec = int(seconds)
       #TODO: Better handling of seconds values greater than 99
-      return '\x0e0{0:02d}'.format(seconds)
+      return '\x0e0{0:02d}'.format(sec)
 
 class Format:
   NewFrame = '\x0c'
@@ -183,7 +192,14 @@ class Format:
   def InterpretMarkup(text):
     #replace entries in curly brackets by their proper protocol values
     #e.g. 'hello {Format.NewLine} There' will insert Format.NewLine binary in place of curly brackets markup.
-    #text = (getattr(sys.modules['JetFileIIProtocol'],'Font')).n5x5 + text
+    def ReplaceMarkupTagWithArg(match):
+      code = match.group(1).strip().lower()
+      arg = match.group(2).strip().lower()
+      print "code: " + code +" arg: " + arg
+      if code in Markup.Registry:
+        #pass
+        return Markup.Registry[code](arg)
+      return match.group(0)
     def ReplaceMarkupTags(match):
       code = match.group(1).strip().lower()
       print "code is " + code
@@ -191,8 +207,9 @@ class Format:
           return Markup.Registry[code]
       return match.group(0)
     
+    regex_with_arg = re.compile(r"\{(.*?)=(.*?)\}")
     regex = re.compile(r"\{(.*?)\}")
-    #text = re.sub(regex , '', text)
+    text = re.sub(regex_with_arg, ReplaceMarkupTagWithArg, text)
     text = re.sub(regex, ReplaceMarkupTags, text)
     print "subbed text: " + text
     return text
@@ -290,6 +307,7 @@ class Message:
 #There's gotta be a better way than this...
 class Markup:
   Registry = {
+    'pause' : Animate.Pause.Seconds,
     'nl' : Format.NewLine,
     'newframe' : Format.NewFrame,
     'halfspace' : Format.Halfspace,
@@ -298,6 +316,13 @@ class Markup:
     'amber' : Font.Color.Amber,
     'typesetOn' : Format.AutoTypeset.On,
     'typesetOff' : Format.AutoTypeset.Off,
+    'slowest' : Animate.Speed.Slow,
+    'veryslow' : Animate.Speed.VerySlow,
+    'slow' : Animate.Speed.Slow,
+    'medium' : Animate.Speed.Medium,
+    'fast' : Animate.Speed.Fast,
+    'veryFast' : Animate.Speed.VeryFast,
+    'fastest' : Animate.Speed.Fastest,
     'nonein' : Animate.Jump.In,
     'noneout' : Animate.Jump.Out,
     'moveleftin' : Animate.MoveLeft.In,

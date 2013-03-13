@@ -23,23 +23,28 @@ from JetFileIIProtocol import Message
 displayMsg = Message.DisplayControlWithoutChecksum
 
 #fetch the weather forecast for a given zip code
-zipcode = 'ZIP:89101'
-weather = pywapi.get_weather_from_yahoo('89129')
+zipcode = '89129'
+weather = pywapi.get_weather_from_yahoo(zipcode)
 
-import pprint
-pp = pprint.PrettyPrinter(indent=4)
-pp.pprint(weather)
+#import pprint
+#pp = pprint.PrettyPrinter(indent=4)
+#pp.pprint(weather)
 
-
+def mps2mph(mps):
+  return  mps * 2.23694
+def celsius2farenheight( celsius ):
+  return celsius * 1.8 + 32
 condition  = weather['condition']['text']
 humidity = weather['atmosphere']['humidity']
-temp = weather['condition']['temp']
-wind = weather['wind']['speed']
+temp_celsius = float(weather['condition']['temp'])
+temp = str( round(celsius2farenheight(temp_celsius),2))
+wind_mps = float( weather['wind']['speed'] )
+wind = str( round(mps2mph(wind_mps),2) )
 
-text = '{amber}{7x6}{nonein}{noneout} Currently: {green}' +condition+'{nl}'
-text = text + '{amber}Temp: {red}' + temp + ' degrees{nl}'
-text = text + '{amber}Humidity: {green}' + humidity + '%{nl}'
-text = text + '{amber}Wind: {red}' + humidity + '{nl}'
+text = '{pause=10}{fastest}{amber}{7x6}{moverightin}{moverightout}Currently: {green}' +condition+'{nl}'
+text = text + '{amber}{moveleftin}{moveleftout}Temp: {red}' + temp + ' degrees{nl}'
+text = text + '{amber}{moverightin}{moverightout}Humidity: {green}' + humidity + '%{nl}'
+text = text + '{amber}{moveleftin}{moveleftout}Wind: {red}' + wind + 'mph{nl}'
 
 msg = displayMsg.Create(1,text=text);
 
