@@ -16,7 +16,9 @@
 	protocol playlist manipulation)
 
 */
-
+#include <string>
+#include <algorithm>
+#include <iostream>
 
 typedef  unsigned long INT32U;
 typedef  unsigned short INT16U;
@@ -145,7 +147,7 @@ namespace Jetfile2
   {
     Jetfile2::Header header;   
   
-     SignOnMsg(const bool showMsg = false )
+     SignOnMsg()
      :header(0,0,0x04,0x04,0,1,0)
     {
 	INT8U* buffer = reinterpret_cast<INT8U*>(this);
@@ -153,6 +155,35 @@ namespace Jetfile2
 	INT32U end = 16;//offsetof(SignOffMsg, Arg);
 	header.Checksum = static_cast<INT16U>(MsgCountCheckSumTwo(buffer,start,end));
     };
+  };
+
+  struct EmergencyMsg
+  {
+    Jetfile2::Header header;
+    INT16U time;
+    INT8U sound;
+    INT8U reserved;
+    char msgBuffer[1024];  
+  
+     EmergencyMsg(const std::string& msg, const INT16U t=10)
+     :header(0,0,0x02,0x09,1,1,0)
+     ,time(t)
+     ,sound(0x1)
+    {
+	//std::copy( msg.begin(), msg.end(), msgBuffer );
+	std::strncpy( msgBuffer, msg.c_str(),msg.length());
+	msgBuffer[msg.length() + 1] = 0x4;
+	std::cout<<"msg buffer length "<<strlen(msgBuffer)<<std::endl;
+	INT8U* buffer = reinterpret_cast<INT8U*>(this);
+	INT32U start = 4;// offsetof(SignOffMsg, header.DataLength);
+	INT32U end = Size();//offsetof(SignOffMsg, Arg);
+	header.DataLength = strlen(msgBuffer)+1;
+	header.Checksum = static_cast<INT16U>(MsgCountCheckSumTwo(buffer,start,end));
+    };
+    size_t Size(void)
+    {
+      return sizeof(EmergencyMsg) - 1024 + strlen(msgBuffer) + 1;
+    }
   };
 
 }
