@@ -1,10 +1,22 @@
+/*
+	file: JetfileII.hpp
+	Author: John O'Neil
+	Desc: JetfileII protocol implementation for controlling
+	chainzone brand LED signs.
+	This is the "2nd" (extended) protocol which isn't amenable
+	to implementation in python due to large amounts of direct
+	binary manipulation.
+	
+	Only partially implementing due to the fact I only need the
+	following commands:
+	1. Turn Sign On/Off
+	2. Get sign on/off status
+	3. Show emergency message for X seconds
+	4. Manipulate playlist (my sign doesn't seem to handle the simplified
+	protocol playlist manipulation)
 
-#include <iostream>
-using std::cout;
-using std::endl;
+*/
 
-#include <boost/asio.hpp>
-using namespace::boost::asio;
 
 typedef  unsigned long INT32U;
 typedef  unsigned short INT16U;
@@ -129,39 +141,18 @@ namespace Jetfile2
 	header.Checksum = static_cast<INT16U>(MsgCountCheckSumTwo(buffer,start,end));
     };
   };
+  struct SignOnMsg
+  {
+    Jetfile2::Header header;   
+  
+     SignOnMsg(const bool showMsg = false )
+     :header(0,0,0x04,0x04,0,1,0)
+    {
+	INT8U* buffer = reinterpret_cast<INT8U*>(this);
+	INT32U start = 4;// offsetof(SignOffMsg, header.DataLength);
+	INT32U end = 16;//offsetof(SignOffMsg, Arg);
+	header.Checksum = static_cast<INT16U>(MsgCountCheckSumTwo(buffer,start,end));
+    };
+  };
 
-}
-
-void dump(unsigned char * buffer, size_t size)
-{
-	//cout.setf(ios::hex,ios::basefield);
-	for(size_t sz = 0; sz < size; ++sz)
-	{
-		cout<<std::hex<<static_cast<int>(buffer[sz])<<"__";
-	}
-	cout<<endl;
-};
- 
-
-int main(int argc, char* argv[])
-{
-	Jetfile2::SignOffMsg msg;
-	cout<<"The size of msg is " << sizeof(msg)<<endl;
-	cout<<"checksum of msg is " << msg.header.Checksum<<endl;
-
-	serial_port_base::baud_rate BAUD(19200);
-	serial_port_base::parity PARITY(serial_port_base::parity::none);
-	serial_port_base::stop_bits STOP(serial_port_base::stop_bits::one);
-	io_service io;
-        serial_port port(io, "/dev/ttyS0");
-
-        port.set_option(BAUD);
-        port.set_option(PARITY);
-        port.set_option(STOP);
-	
-	dump(reinterpret_cast<unsigned char*>(&msg),sizeof(msg));
-
-        write(port, buffer(&msg,sizeof(msg)));
-	
-	return 0;
 }
