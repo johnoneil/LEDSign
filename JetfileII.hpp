@@ -98,47 +98,6 @@ __inline INT16U crc_ccitt_byte(INT16U crc, INT8U c)
 
 namespace Jetfile2
 {
-  struct Header
-  {
-    INT16U SYN;
-    INT16U Checksum;
-    INT16U DataLength;
-    INT16U SourceAddr;
-    INT16U DestAddr;
-    INT16U PacketSerial;
-    INT8U MainCmd;
-    INT8U SubCmd;
-    INT8U ArgLen;
-    INT8U Flag;
-    Header(const INT16U sourceAddr, const INT16U destAddr, const INT8U maincmd, const INT8U subcmd,
-            const INT8U arglen, const INT8U flag, const INT16U datalen)
-    :SYN(0xa755)//commmon checksum (not crc)
-    ,Checksum(0)
-    ,DataLength(datalen)
-    ,SourceAddr(sourceAddr)
-    ,DestAddr(destAddr)
-    ,PacketSerial(0xabcd)
-    ,MainCmd(maincmd)
-    ,SubCmd(subcmd)
-    ,ArgLen(arglen)
-    ,Flag(flag)
-    {
-      
-    };
-  };
-  struct SignOnMsg
-  {
-    Jetfile2::Header header;   
-  
-     SignOnMsg()
-     :header(0,0,0x04,0x04,0,1,0)
-    {
-	INT8U* buffer = reinterpret_cast<INT8U*>(this);
-	INT32U start = 4;// offsetof(SignOffMsg, header.DataLength);
-	INT32U end = 16;//offsetof(SignOffMsg, Arg);
-	header.Checksum = static_cast<INT16U>(MsgCountCheckSumTwo(buffer,start,end));
-    };
-  };
 
 namespace Text
 {
@@ -244,6 +203,28 @@ std::string EmergencyMessage(const char* msg, const INT16U t = 10)
 	m = char(0x1) + m;//arglength (arg is 1x4 bytes long)
 	m = char(0x9) + m;//subcommand
 	m = char(0x2) + m;//main command
+	m = INT16U2String(0xabcd) + m;//packet serial
+	m = char(0x0) + m;//source, dest addresses.
+	m = char(0x0) + m;
+	m = char(0x0) + m;
+	m = char(0x0) + m;
+	m = INT16U2String(dataLen) + m;
+	m = Message::Checksum(m) + m;
+	m = Message::SYN() + m;
+	
+	return m;
+}
+
+std::string TurnSignOn(void)
+{
+  std::string m;
+	const INT16U dataLen = 0;
+	//build the message backwards from the payload (data) to facilitate 
+  //calculating the checksum.
+	m = char(0x1) + m;//flag
+	m = char(0x0) + m;//arglength (arg is 0 bytes long)
+	m = char(0x4) + m;//subcommand
+	m = char(0x4) + m;//main command
 	m = INT16U2String(0xabcd) + m;//packet serial
 	m = char(0x0) + m;//source, dest addresses.
 	m = char(0x0) + m;
