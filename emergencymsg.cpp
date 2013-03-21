@@ -22,8 +22,9 @@ void dump(unsigned char * buffer, size_t size)
 
 int main(int argc, char* argv[])
 {
-	std::string hello("QZ00SAXhello there...");
-	Jetfile2::EmergencyMsg msg(hello);
+	//std::string hello("hello there...");
+	//hello = Jetfile2::Text::Header + hello + Jetfile2::Text::Coda;
+	Jetfile2::EmergencyMsg msg(Jetfile2::Text::Generate("Hello there. How are you?"));
 	cout<<"The size of msg is " << msg.Size() <<endl;
 	cout<<"checksum of msg is " << msg.header.Checksum<<endl;
 

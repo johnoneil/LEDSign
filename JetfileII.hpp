@@ -172,18 +172,76 @@ namespace Jetfile2
     {
 	//std::copy( msg.begin(), msg.end(), msgBuffer );
 	std::strncpy( msgBuffer, msg.c_str(),msg.length());
-	msgBuffer[msg.length() + 1] = 0x4;
+	//msgBuffer[msg.length() + 1] = 0x4;
 	std::cout<<"msg buffer length "<<strlen(msgBuffer)<<std::endl;
 	INT8U* buffer = reinterpret_cast<INT8U*>(this);
 	INT32U start = 4;// offsetof(SignOffMsg, header.DataLength);
 	INT32U end = Size();//offsetof(SignOffMsg, Arg);
-	header.DataLength = strlen(msgBuffer)+1;
+	header.DataLength = strlen(msgBuffer);//+1;
 	header.Checksum = static_cast<INT16U>(MsgCountCheckSumTwo(buffer,start,end));
     };
     size_t Size(void)
     {
-      return sizeof(EmergencyMsg) - 1024 + strlen(msgBuffer) + 1;
+      return sizeof(EmergencyMsg) - 1024 + strlen(msgBuffer);// + 1;
     }
   };
+  
+  namespace Text
+  {
+	static const char Header[] = "QZ00SAX";
+	static const char Coda = 0x4;
+	static const char NewFrame = 0x0c;
+	static const char NewLine = 0x0d;
+	static const char Halfspace = 0x82;
+	namespace Flash
+	{
+		static const char On[] = {0x07,'1'};
+		static const char Off[] = {0x07,'0'};
+	}
+	namespace AutoTypeset
+	{
+		static const char On[] = {0x1b,0x0a};
+		static const char Off[] = {0x1b,0x0b};
+	}
+	namespace Background
+	{
+		static const char Red[] = {0x1d,'0'};
+		static const char Green[] = {0x1d,'1'};
+		static const char Amber[] = {0x1d,'2'};
+	}
+	std::string Generate(const std::string& msg)
+	{
+		std::string m = msg;
+		return Text::Header + msg + Text::Coda;
+	}
+	std::string Generate(const char* msg)
+	{
+		return Text::Generate(std::string(msg));
+	}
+	
+	//namespace Align
+	//{
+	//	static const char On[] = {0x1b,0x0a};
+	//	static const char Off[] = {0x1b,0x0b};
+	//}
+/*  class AutoTypeset:
+    Off = '\x1b0a'
+    On = '\x1b0b'
+  class Background:
+    Black = '\x1d0'
+    Red = '\x1d1'
+    Green = '\x1d2'
+    Amber = '\x1d3'
+  class Align:
+    class Vertical:
+      Center = '\x1f0'
+      Top = '\x1f1'
+      Bottom = '\x1f2'
+    class Horizontal:
+      Center = '\x1e0'
+      Left = '\x1e1'
+      Right = '\x1e2' 
+  };*/
+  }
 
 }
