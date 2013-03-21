@@ -17,6 +17,7 @@
 
 */
 #include <string>
+#include <sstream>
 #include <algorithm>
 #include <iostream>
 
@@ -185,7 +186,6 @@ namespace Jetfile2
       return sizeof(EmergencyMsg) - 1024 + strlen(msgBuffer);// + 1;
     }
   };
-  
   namespace Text
   {
 	static const char Header[] = "QZ00SAX";
@@ -212,6 +212,7 @@ namespace Jetfile2
 	std::string Generate(const std::string& msg)
 	{
 		std::string m = msg;
+		//TODO: Process m for markup and turn into correct binary format.
 		return Text::Header + msg + Text::Coda;
 	}
 	std::string Generate(const char* msg)
@@ -243,5 +244,54 @@ namespace Jetfile2
       Right = '\x1e2' 
   };*/
   }
+
+	namespace Message
+	{
+		std::string INT16U2String(const INT16U v)
+		{
+			std::string r;
+			r += char( v & 0x00ff);
+			r += char( (v & 0xff00) >> 8);
+			return r;
+		};
+		std::string Checksum(const std::string& payload)
+		{
+			const INT32U checksum32 = MsgCountCheckSumTwo(reinterpret_cast<INT8U*>(const_cast<char*>(payload.c_str())),0,payload.size());
+			const INT16U checksum16 = static_cast< INT16U >(checksum32);
+			return INT16U2String(checksum16);
+		}
+		//std::string INT8U2String(const INT8U v)
+		//{
+		//	return std::string(static_cast<char>(v));
+		//};
+		//const static std::string SYN = {0x55 ,0xa7};
+		std::string SYN(void)
+		{
+			return INT16U2String(0xa755);
+		}
+	  	std::string EmergencyMessage(const char* msg, const INT16U t = 10)
+		{
+			std::string m = Text::Generate(msg);
+			const INT16U dataLen = m.size();
+			//add on  as much data necessary to create the checksum
+			m = INT16U2String(t) + char(0x0) + char(0x0) + m;//time, sound, reserved
+			m = char(0x0) + m;//flag
+			m = char(0x1) + m;//arglength (arg is 1x4 bytes long)
+			m = char(0x9) + m;//subcommand
+			m = char(0x2) + m;//main command
+			m = INT16U2String(0xabcd) + m;//packet serial
+			m = char(0x0) + m;//source, dest addresses.
+			m = char(0x0) + m;
+			m = char(0x0) + m;
+			m = char(0x0) + m;
+			m = INT16U2String(dataLen) + m;
+			m = Message::Checksum(m) + m;
+			m = Message::SYN() + m;
+			
+			return m;
+		}
+	}
+  
+
 
 }
