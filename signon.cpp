@@ -1,4 +1,4 @@
-
+/* vim: set ts=2 expandtab: */
 #include <iostream>
 using std::cout;
 using std::endl;

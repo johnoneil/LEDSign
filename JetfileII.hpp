@@ -1,3 +1,5 @@
+/* vim: set ts=2 expandtab: */
+
 /*
 	file: JetfileII.hpp
 	Author: John O'Neil
@@ -124,26 +126,6 @@ namespace Jetfile2
       
     };
   };
-  struct SignOffMsg
-  {
-    Jetfile2::Header header;
-    INT32U Arg;    
-  
-     SignOffMsg(const bool showMsg = false )
-     :header(0,0,0x04,0x03,1,1,0)
-    {
-      if(showMsg)
-      {
-        Arg = 0;
-      }else{
-        Arg = 1;
-      }
-	INT8U* buffer = reinterpret_cast<INT8U*>(this);
-	INT32U start = 4;// offsetof(SignOffMsg, header.DataLength);
-	INT32U end = 20;//offsetof(SignOffMsg, Arg);
-	header.Checksum = static_cast<INT16U>(MsgCountCheckSumTwo(buffer,start,end));
-    };
-  };
   struct SignOnMsg
   {
     Jetfile2::Header header;   
@@ -158,140 +140,152 @@ namespace Jetfile2
     };
   };
 
-  struct EmergencyMsg
-  {
-    Jetfile2::Header header;
-    INT16U time;
-    INT8U sound;
-    INT8U reserved;
-    char msgBuffer[1024];  
-  
-     EmergencyMsg(const std::string& msg, const INT16U t=10)
-     :header(0,0,0x02,0x09,1,1,0)
-     ,time(t)
-     ,sound(0x1)
-    {
-	//std::copy( msg.begin(), msg.end(), msgBuffer );
-	std::strncpy( msgBuffer, msg.c_str(),msg.length());
-	//msgBuffer[msg.length() + 1] = 0x4;
-	std::cout<<"msg buffer length "<<strlen(msgBuffer)<<std::endl;
-	INT8U* buffer = reinterpret_cast<INT8U*>(this);
-	INT32U start = 4;// offsetof(SignOffMsg, header.DataLength);
-	INT32U end = Size();//offsetof(SignOffMsg, Arg);
-	header.DataLength = strlen(msgBuffer);//+1;
-	header.Checksum = static_cast<INT16U>(MsgCountCheckSumTwo(buffer,start,end));
-    };
-    size_t Size(void)
-    {
-      return sizeof(EmergencyMsg) - 1024 + strlen(msgBuffer);// + 1;
-    }
-  };
-  namespace Text
-  {
-	static const char Header[] = "QZ00SAX";
-	static const char Coda = 0x4;
-	static const char NewFrame = 0x0c;
-	static const char NewLine = 0x0d;
-	static const char Halfspace = 0x82;
-	namespace Flash
-	{
-		static const char On[] = {0x07,'1'};
-		static const char Off[] = {0x07,'0'};
-	}
-	namespace AutoTypeset
-	{
-		static const char On[] = {0x1b,0x0a};
-		static const char Off[] = {0x1b,0x0b};
-	}
-	namespace Background
-	{
-		static const char Red[] = {0x1d,'0'};
-		static const char Green[] = {0x1d,'1'};
-		static const char Amber[] = {0x1d,'2'};
-	}
-	std::string Generate(const std::string& msg)
-	{
-		std::string m = msg;
-		//TODO: Process m for markup and turn into correct binary format.
-		return Text::Header + msg + Text::Coda;
-	}
-	std::string Generate(const char* msg)
-	{
-		return Text::Generate(std::string(msg));
-	}
-	
-	//namespace Align
-	//{
-	//	static const char On[] = {0x1b,0x0a};
-	//	static const char Off[] = {0x1b,0x0b};
-	//}
-/*  class AutoTypeset:
-    Off = '\x1b0a'
-    On = '\x1b0b'
-  class Background:
-    Black = '\x1d0'
-    Red = '\x1d1'
-    Green = '\x1d2'
-    Amber = '\x1d3'
-  class Align:
-    class Vertical:
-      Center = '\x1f0'
-      Top = '\x1f1'
-      Bottom = '\x1f2'
-    class Horizontal:
-      Center = '\x1e0'
-      Left = '\x1e1'
-      Right = '\x1e2' 
-  };*/
-  }
-
-	namespace Message
-	{
-		std::string INT16U2String(const INT16U v)
-		{
-			std::string r;
-			r += char( v & 0x00ff);
-			r += char( (v & 0xff00) >> 8);
-			return r;
-		};
-		std::string Checksum(const std::string& payload)
-		{
-			const INT32U checksum32 = MsgCountCheckSumTwo(reinterpret_cast<INT8U*>(const_cast<char*>(payload.c_str())),0,payload.size());
-			const INT16U checksum16 = static_cast< INT16U >(checksum32);
-			return INT16U2String(checksum16);
-		}
-		//std::string INT8U2String(const INT8U v)
-		//{
-		//	return std::string(static_cast<char>(v));
-		//};
-		//const static std::string SYN = {0x55 ,0xa7};
-		std::string SYN(void)
-		{
-			return INT16U2String(0xa755);
-		}
-	  	std::string EmergencyMessage(const char* msg, const INT16U t = 10)
-		{
-			std::string m = Text::Generate(msg);
-			const INT16U dataLen = m.size();
-			//add on  as much data necessary to create the checksum
-			m = INT16U2String(t) + char(0x0) + char(0x0) + m;//time, sound, reserved
-			m = char(0x0) + m;//flag
-			m = char(0x1) + m;//arglength (arg is 1x4 bytes long)
-			m = char(0x9) + m;//subcommand
-			m = char(0x2) + m;//main command
-			m = INT16U2String(0xabcd) + m;//packet serial
-			m = char(0x0) + m;//source, dest addresses.
-			m = char(0x0) + m;
-			m = char(0x0) + m;
-			m = char(0x0) + m;
-			m = INT16U2String(dataLen) + m;
-			m = Message::Checksum(m) + m;
-			m = Message::SYN() + m;
-			
-			return m;
-		}
-	}
-  
-
-
+namespace Text
+{
+  static const char Header[] = "QZ00SAX";
+  static const char Coda = 0x4;
+  static const char NewFrame = 0x0c;
+  static const char NewLine = 0x0d;
+  static const char Halfspace = 0x82;
+namespace Flash
+{
+	static const char On[] = {0x07,'1'};
+	static const char Off[] = {0x07,'0'};
 }
+namespace AutoTypeset
+{
+	static const char On[] = {0x1b,0x0a};
+	static const char Off[] = {0x1b,0x0b};
+}
+namespace Background
+{
+	static const char Red[] = {0x1d,'0'};
+	static const char Green[] = {0x1d,'1'};
+	static const char Amber[] = {0x1d,'2'};
+}
+
+std::string Generate(const std::string& msg)
+{
+	std::string m = msg;
+	//TODO: Process m for markup and turn into correct binary format.
+	return Text::Header + msg + Text::Coda;
+}
+
+std::string Generate(const char* msg)
+{
+	return Text::Generate(std::string(msg));
+}
+
+//namespace Align
+//{
+//	static const char On[] = {0x1b,0x0a};
+//	static const char Off[] = {0x1b,0x0b};
+//}
+/*  class AutoTypeset:
+  Off = '\x1b0a'
+  On = '\x1b0b'
+class Background:
+  Black = '\x1d0'
+  Red = '\x1d1'
+  Green = '\x1d2'
+  Amber = '\x1d3'
+class Align:
+  class Vertical:
+    Center = '\x1f0'
+    Top = '\x1f1'
+    Bottom = '\x1f2'
+  class Horizontal:
+    Center = '\x1e0'
+    Left = '\x1e1'
+    Right = '\x1e2' 
+};*/
+
+}//namespace Text
+
+namespace Message
+{
+std::string INT16U2String(const INT16U v)
+{
+	std::string r;
+	r += char( v & 0x00ff);
+	r += char( (v & 0xff00) >> 8);
+	return r;
+};
+
+std::string INT32U2String(const INT32U v)
+{
+	std::string r;
+	r += char( v & 0x000000ff);
+	r += char((v & 0x0000ff00) >> 8);
+  r += char((v & 0x00ff0000) >> 16);
+  r += char((v & 0xff000000) >> 24);
+	return r;
+}
+
+std::string Checksum(const std::string& payload)
+{
+	const INT32U checksum32 = MsgCountCheckSumTwo(reinterpret_cast<INT8U*>(const_cast<char*>(payload.c_str())),0,payload.size());
+	const INT16U checksum16 = static_cast< INT16U >(checksum32);
+	return INT16U2String(checksum16);
+}
+
+std::string SYN(void)
+{
+	return INT16U2String(0xa755);
+}
+std::string EmergencyMessage(const char* msg, const INT16U t = 10)
+{
+	std::string m = Text::Generate(msg);
+	const INT16U dataLen = m.size();
+	//build the message backwards from the payload (data) to facilitate 
+  //calculating the checksum.
+	m = INT16U2String(t) + char(0x0) + char(0x0) + m;//time, sound, reserved
+	m = char(0x0) + m;//flag
+	m = char(0x1) + m;//arglength (arg is 1x4 bytes long)
+	m = char(0x9) + m;//subcommand
+	m = char(0x2) + m;//main command
+	m = INT16U2String(0xabcd) + m;//packet serial
+	m = char(0x0) + m;//source, dest addresses.
+	m = char(0x0) + m;
+	m = char(0x0) + m;
+	m = char(0x0) + m;
+	m = INT16U2String(dataLen) + m;
+	m = Message::Checksum(m) + m;
+	m = Message::SYN() + m;
+	
+	return m;
+}
+
+std::string TurnSignOff(const bool sayGoodbye = false)
+{
+  std::string m;
+	const INT16U dataLen = 0;
+	//build the message backwards from the payload (data) to facilitate 
+  //calculating the checksum.
+  if(sayGoodbye)
+  {
+    m = INT32U2String(1) + m;
+  }else{
+    m = INT32U2String(0) + m;
+  }
+	m = char(0x1) + m;//flag
+	m = char(0x1) + m;//arglength (arg is 1x4 bytes long)
+	m = char(0x3) + m;//subcommand
+	m = char(0x4) + m;//main command
+	m = INT16U2String(0xabcd) + m;//packet serial
+	m = char(0x0) + m;//source, dest addresses.
+	m = char(0x0) + m;
+	m = char(0x0) + m;
+	m = char(0x0) + m;
+	m = INT16U2String(dataLen) + m;
+	m = Message::Checksum(m) + m;
+	m = Message::SYN() + m;
+	
+	return m;
+}
+
+
+
+}//namespace Message
+
+}//namespace jetfile2
