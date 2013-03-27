@@ -11,6 +11,7 @@
 
 import sys
 import re
+from struct import *
 
 class Animate:
   class Speed:
@@ -274,10 +275,12 @@ class Font:
 #See section 3.1 of protocol description
 class Message:
   Header = '\x00\x00\x00\x00\x00\x01Z00'
+  Type2Header = 'QZ00SAX'
   Protocol = '\x06'
   BeginCommand = '\x02'
   WriteFile = 'A'
   Coda = '\x04'
+  SYN = '\x55\xa7'
   class DisplayControlWithoutChecksum:
     @staticmethod
     def Create(msgId, unit_address=0, disk='E', folder='T', text='Testing, 1, 2, 3.'):
@@ -294,6 +297,82 @@ class Message:
   @staticmethod
   def MsgId2DiskFolderFilename(msgId,disk='E',folder='T'):
     return '\x0f' + disk + folder + Message.MsgId2Filename(msgId)
+
+  @staticmethod
+  def Checksum(message):
+    sum = 0
+    for c in message:
+      sum = sum + ord(c)
+    #print "checksum calculated is " + str(sum)
+    packed =  pack('H',sum)
+    #print packed
+    return packed
+
+  @staticmethod
+  def Create(msg):
+    return Message.Type2Header + msg + Message.Coda
+
+  @staticmethod
+  def EmergencyMessage(msg,t=10):
+    #build and return an emergency message with checksum backwards from data
+    m = Message.Create(msg);
+    data_length = len(m)
+    m = pack('H',1) + '\x00' + '\x00' + m;#time, sound, reserved
+    m = '\x00' + m;#flag
+    m = '\x01' + m;#arglength (arg is 1x4 bytes long)
+    m = '\x09' + m;#subcommand
+    m = '\x02' + m;#main command
+    m = '\xab\xcd' + m;#packet serial
+    m = '\x00' + m;#source, dest addresses.
+    m = '\x00' + m;
+    m = '\x00' + m;
+    m = '\x00' + m;
+    m = pack('H',data_length) + m;
+    m = Message.Checksum(m) + m;
+    m = Message.SYN + m;
+    return m
+
+  @staticmethod
+  def TurnSignOff(goodbyeMsg=False):
+    #build and return an emergency message with checksum backwards from data
+    m = ''
+    data_length = 0
+    if goodbyeMsg:
+      m = pack('L',0) + m
+    else:
+      m = pack('L',1) + m
+    m = '\x00' + m;#flag
+    m = '\x01' + m;#arglength (arg is 1x4 bytes long)
+    m = '\x03' + m;#subcommand
+    m = '\x04' + m;#main command
+    m = '\xab\xcd' + m;#packet serial
+    m = '\x00' + m;#source, dest addresses.
+    m = '\x00' + m;
+    m = '\x00' + m;
+    m = '\x00' + m;
+    m = pack('H',data_length) + m;
+    m = Message.Checksum(m) + m;
+    m = Message.SYN + m;
+    return m
+
+  @staticmethod
+  def TurnSignOn():
+    #build and return an emergency message with checksum backwards from data
+    m = ''
+    data_length = 0
+    m = '\x00' + m;#flag
+    m = '\x00' + m;#arglength (arg is 1x4 bytes long)
+    m = '\x04' + m;#subcommand
+    m = '\x04' + m;#main command
+    m = '\xab\xcd' + m;#packet serial
+    m = '\x00' + m;#source, dest addresses.
+    m = '\x00' + m;
+    m = '\x00' + m;
+    m = '\x00' + m;
+    m = pack('H',data_length) + m;
+    m = Message.Checksum(m) + m;
+    m = Message.SYN + m;
+    return m
 
   class Bitmap:
     CommmandCharacter = 'I'
