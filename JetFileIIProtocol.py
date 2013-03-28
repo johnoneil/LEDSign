@@ -296,6 +296,7 @@ class Message:
     return str('%c%c' % (65 + int(msgId / 26), 65 + (msgId % 26)))
   @staticmethod
   def MsgId2DiskFolderFilename(msgId,disk='E',folder='T'):
+    print "MsgId2DiskFolderFilename returns filename " + Message.MsgId2Filename(msgId)
     return '\x0f' + disk + folder + Message.MsgId2Filename(msgId)
 
   @staticmethod
@@ -304,13 +305,42 @@ class Message:
     for c in message:
       sum = sum + ord(c)
     #print "checksum calculated is " + str(sum)
-    packed =  pack('H',sum)
+    USHRT_MAX = 65535
+    packed =  pack('H',sum % USHRT_MAX)
     #print packed
     return packed
 
   @staticmethod
   def Create(msg):
     return Message.Type2Header + msg + Message.Coda
+
+  @staticmethod
+  def FileLabel(label):
+    if(len(label) < 12):
+      return label.ljust(12,'\x00')
+    elif (len(label) > 12):
+      return label[:12]
+
+  @staticmethod
+  def WriteText(message,disk_partition='E',buzzer_time=0,file_label='AB'):
+    #build and return an emergency message with checksum backwards from data
+    m = Message.Create(message)
+    data_length = len(m)
+    m = pack('L',data_length) +  pack('H',data_length) + pack('H',1) + pack('H',1) + m
+    m = disk_partition + pack('B',buzzer_time) + Message.FileLabel(file_label) + m
+    m = '\x00' + m;#flag
+    m = '\x06' + m;#arglength (arg is 1x4 bytes long)
+    m = '\x04' + m;#subcommand
+    m = '\x02' + m;#main command
+    m = '\xab\xcd' + m;#packet serial
+    m = '\x00' + m;#source, dest addresses.
+    m = '\x00' + m;
+    m = '\x00' + m;
+    m = '\x00' + m;
+    m = pack('H',data_length) + m;
+    m = Message.Checksum(m) + m;
+    m = Message.SYN + m;
+    return m
 
   @staticmethod
   def EmergencyMessage(msg,t=10):
@@ -373,6 +403,73 @@ class Message:
     m = Message.Checksum(m) + m;
     m = Message.SYN + m;
     return m
+
+  @staticmethod
+  def StartCountdown(day=0,hour=0,minute=0,second=0):
+    #build and return an emergency message with checksum backwards from data
+    m = ''
+    data_length = 0
+    m = pack('B',day) + pack('B',hour) + pack('B',minute) + pack('B',second) + m
+    m = '\x00' + m;#flag
+    m = '\x01' + m;#arglength (arg is 1x4 bytes long)
+    m = '\x11' + m;#subcommand
+    m = '\x06' + m;#main command
+    m = '\xab\xcd' + m;#packet serial
+    m = '\x00' + m;#source, dest addresses.
+    m = '\x00' + m;
+    m = '\x00' + m;
+    m = '\x00' + m;
+    m = pack('H',data_length) + m;
+    m = Message.Checksum(m) + m;
+    m = Message.SYN + m;
+    return m
+
+  @staticmethod
+  def StopCountdown():
+    #build and return an emergency message with checksum backwards from data
+    m = ''
+    data_length = 0
+    m = '\x00' + m;#flag
+    m = '\x00' + m;#arglength (arg is 1x4 bytes long)
+    m = '\x12' + m;#subcommand
+    m = '\x06' + m;#main command
+    m = '\xab\xcd' + m;#packet serial
+    m = '\x00' + m;#source, dest addresses.
+    m = '\x00' + m;
+    m = '\x00' + m;
+    m = '\x00' + m;
+    m = pack('H',data_length) + m;
+    m = Message.Checksum(m) + m;
+    m = Message.SYN + m;
+    return m
+
+  @staticmethod
+  def DynamicDisplay(ledData):
+    #build and return an arra of messages (of same size)
+    #that describe the display we want.
+    #1 how many messages will we create?
+    num_messages = len(ledData)/512
+    data_length = 512
+    message_array = []
+    for iMsg in range(num_messages):
+      start = iMsg*512
+      end = start + 512
+      m = ledData[start:end]
+      m = pack('H', data_length) + pack('H',num_messages) + pack('H', iMsg+1) + pack('H',0) + m
+      m = '\x00' + m;#flag
+      m = '\x02' + m;#arglength (arg is 2x4 bytes long)
+      m = '\x04' + m;#subcommand
+      m = '\x08' + m;#main command
+      m = '\xab\xcd' + m;#packet serial
+      m = '\x00' + m;#source, dest addresses.
+      m = '\x00' + m;
+      m = '\x00' + m;
+      m = '\x00' + m;
+      m = pack('H',data_length) + m;
+      m = Message.Checksum(m) + m;
+      m = Message.SYN + m;
+      message_array.append(m)
+    return message_array
 
   class Bitmap:
     CommmandCharacter = 'I'
