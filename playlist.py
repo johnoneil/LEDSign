@@ -14,13 +14,12 @@
 
 import serial
 from JetFileIIProtocol import Message
+import time
 
 msgs = []
 msgs.append( Message.File('WEATHER',file_label='WEATHER.TXT') )
-#msgs.append( Message.File('WEATHER') )
 msgs.append( Message.File('NEWS',file_label='NEWS.TXT') )
-#msgs.append( Message.File('NEWS') )
-msgs.append( Message.File('SPORTS123',file_label='SPORTS.TXT') )
+msgs.append( Message.File('SPORTS',file_label='SPORTS.TXT') )
 
 playlist = Message.WriteSystemFile(Message.Playlist(msgs))
 
@@ -31,13 +30,14 @@ port = '/dev/ttyS0'
 baudRate = 19200
 ser = serial.Serial(port, baudRate)
 
-x = ser.write(playlist)
+time.sleep(1)
 
 for msg in msgs:
-  pass
   #print msg.data.encode("hex")
-  #x = ser.write(msg.data)
+  x = ser.write(msg.data)
+  time.sleep(1)
 
+x = ser.write(playlist)
 
 ser.close()
 
