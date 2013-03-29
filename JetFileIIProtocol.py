@@ -320,6 +320,7 @@ class Message:
       return label.ljust(12,'\x00')
     elif (len(label) > 12):
       return label[:12]
+    return label
 
   @staticmethod
   def WriteText(message,disk_partition='E',buzzer_time=0,file_label='AB'):
@@ -339,7 +340,7 @@ class Message:
     m = '\x00' + m;
     m = pack('H',data_length) + m;
     m = Message.Checksum(m) + m;
-    m = Message.SYN + m;
+    m = '\x00\x00\x00' + Message.SYN + m;
     return m
 
   @staticmethod
@@ -366,6 +367,7 @@ class Message:
   class File:
     def __init__(self,data,file_label='AB',filetype='T'):
       self.file_label=Message.FileLabel(file_label)
+      print "File label: " + self.file_label + " "+ self.file_label.encode('hex')
       self.data=Message.WriteText(data,file_label=file_label)
       self.filetype=filetype
 
@@ -376,7 +378,7 @@ class Message:
     m = 'SQ' + '\x04' + '\x00' + pack('H', num_files) + pack('H',0x0)
     for file in files:
       m = m + partition + file.filetype + '\x0f' + Message.WeekRepetition()
-      m = m + Message.DateTimeStructure() + Message.DateTimeStructure()
+      m = m + Message.DateTimeStructure(year=2008,month=3,day=16,hour=0,minute=0) + Message.DateTimeStructure(year=2008,month=3,day=16,hour=0,minute=0)
       #m = m + Message.Checksum(file.data) + pack('H',len(file.data)) + file.file_label
       m = m +'\xb0\x00' + '\x00\x00' + file.file_label
     return m
@@ -387,7 +389,7 @@ class Message:
 
   @staticmethod
   def WeekRepetition():
-    return str('\x7f')
+    return str('\x80')
   
 
   @staticmethod

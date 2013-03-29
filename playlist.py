@@ -17,13 +17,15 @@ from JetFileIIProtocol import Message
 
 msgs = []
 msgs.append( Message.File('WEATHER',file_label='WEATHER.TXT') )
+#msgs.append( Message.File('WEATHER') )
 msgs.append( Message.File('NEWS',file_label='NEWS.TXT') )
-msgs.append( Message.File('SPORTS',file_label='SPORTS.TXT') )
+#msgs.append( Message.File('NEWS') )
+msgs.append( Message.File('SPORTS123',file_label='SPORTS.TXT') )
 
 playlist = Message.WriteSystemFile(Message.Playlist(msgs))
 
-print "Playlist is: " + playlist.encode('hex')
-print playlist
+#print "Playlist is: " + playlist.encode('hex')
+#print playlist
 
 port = '/dev/ttyS0'
 baudRate = 19200
@@ -32,8 +34,9 @@ ser = serial.Serial(port, baudRate)
 x = ser.write(playlist)
 
 for msg in msgs:
-  print msg.data.encode("hex")
-  x = ser.write(msg.data)
+  pass
+  #print msg.data.encode("hex")
+  #x = ser.write(msg.data)
 
 
 ser.close()
