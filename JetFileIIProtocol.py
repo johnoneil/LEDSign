@@ -343,6 +343,54 @@ class Message:
     return m
 
   @staticmethod
+  def WriteSystemFile(file_contents, file_label='SEQUENT.SYS'):
+    #build and return an emergency message with checksum backwards from data
+    m = file_contents #Message.Create(message)
+    data_length = len(m)
+    m = pack('L',data_length) +  pack('H',data_length) + pack('H',1) + pack('H',1) + pack('H',0) + m
+    m = Message.FileLabel(file_label) + m
+    m = '\x00' + m;#flag
+    m = '\x06' + m;#arglength (arg is 1x4 bytes long)
+    m = '\x02' + m;#subcommand
+    m = '\x02' + m;#main command
+    m = '\xab\xcd' + m;#packet serial
+    m = '\x00' + m;#source, dest addresses.
+    m = '\x00' + m;
+    m = '\x00' + m;
+    m = '\x00' + m;
+    m = pack('H',data_length) + m;
+    m = Message.Checksum(m) + m;
+    m = Message.SYN + m;
+    return m
+
+  class File:
+    def __init__(self,data,file_label='AB',filetype='T'):
+      self.file_label=Message.FileLabel(file_label)
+      self.data=Message.WriteText(data,file_label=file_label)
+      self.filetype=filetype
+
+  @staticmethod
+  def Playlist(files, partition='E', file_label='SEQUENT.SYS'):
+    #build and return an emergency message with checksum backwards from data
+    num_files = len(files)
+    m = 'SQ' + '\x04' + '\x00' + pack('H', num_files) + pack('H',0x0)
+    for file in files:
+      m = m + partition + file.filetype + '\x0f' + Message.WeekRepetition()
+      m = m + Message.DateTimeStructure() + Message.DateTimeStructure()
+      #m = m + Message.Checksum(file.data) + pack('H',len(file.data)) + file.file_label
+      m = m +'\xb0\x00' + '\x00\x00' + file.file_label
+    return m
+
+  @staticmethod
+  def DateTimeStructure(year=0,month=0,day=0,hour=0,minute=0):
+    return pack('H',year) + pack('B',month) + pack('B',day) + pack('B',hour) + pack('B',minute) + '\x01' +'\x01'
+
+  @staticmethod
+  def WeekRepetition():
+    return str('\x7f')
+  
+
+  @staticmethod
   def EmergencyMessage(msg,t=10):
     #build and return an emergency message with checksum backwards from data
     m = Message.Create(msg);
