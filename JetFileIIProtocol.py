@@ -394,7 +394,7 @@ class Message:
     for imsg in range(num_messages):
       m = data[imsg*payload_size:imsg*payload_size+payload_size] #Message.Create(message)
       data_length = len(m)
-      m = partition + pack('B',0) +  Message.FileLabel(file_label) + pack('L',data_size) + pack('H',data_length) + pack('H',1) + pack('H',1) + m
+      m = partition + pack('B',0) +  Message.FileLabel(file_label) + pack('L',data_size) + pack('H',payload_size) + pack('H',num_messages) + pack('H',imsg+1) + m
       m = '\x00' + m;#flag
       m = '\x06' + m;#arglength (arg is 1x4 bytes long)
       m = '\x06' + m;#subcommand
