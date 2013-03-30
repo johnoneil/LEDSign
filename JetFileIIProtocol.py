@@ -388,24 +388,27 @@ class Message:
   def Picture(data, partition='E',file_label="AA"):
     #build and return an emergency message with checksum backwards from data
     messages = []
-    num_messages = len(data)/1024
-    payload_size = num_messages
-    m = data #Message.Create(message)
-    data_length = len(data)
-    m = partition + pack('B',0) +  Message.FileLabel(file_label) + pack('H',data_length) + pack('H',1) + pack('H',1) + m
-    m = '\x00' + m;#flag
-    m = '\x06' + m;#arglength (arg is 1x4 bytes long)
-    m = '\x06' + m;#subcommand
-    m = '\x02' + m;#main command
-    m = '\xab\xcd' + m;#packet serial
-    m = '\x00' + m;#source, dest addresses.
-    m = '\x00' + m;
-    m = '\x00' + m;
-    m = '\x00' + m;
-    m = pack('H',data_length) + m;
-    m = Message.Checksum(m) + m;
-    m = Message.SYN + m;
-    return m   
+    data_size = len(data)
+    num_messages = data_size/512 + 1
+    payload_size = data_size/num_messages
+    for imsg in range(num_messages):
+      m = data[imsg*payload_size:imsg*payload_size+payload_size] #Message.Create(message)
+      data_length = len(m)
+      m = partition + pack('B',0) +  Message.FileLabel(file_label) + pack('L',data_size) + pack('H',data_length) + pack('H',1) + pack('H',1) + m
+      m = '\x00' + m;#flag
+      m = '\x06' + m;#arglength (arg is 1x4 bytes long)
+      m = '\x06' + m;#subcommand
+      m = '\x02' + m;#main command
+      m = '\xab\xcd' + m;#packet serial
+      m = '\x00' + m;#source, dest addresses.
+      m = '\x00' + m;
+      m = '\x00' + m;
+      m = '\x00' + m;
+      m = pack('H',data_length) + m;
+      m = Message.Checksum(m) + m;
+      m = Message.SYN + m;
+      messages.append(m)
+    return messages   
 
   @staticmethod
   def DateTimeStructure(year=0,month=0,day=0,hour=0,minute=0):
