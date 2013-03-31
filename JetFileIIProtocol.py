@@ -12,6 +12,7 @@
 import sys
 import re
 from struct import *
+from time import localtime
 
 class Animate:
   class Speed:
@@ -232,6 +233,12 @@ class Date:
   class DayOfWeek:
     Number = '\x0b\x2a'
     Abbreviation = '\x0b\x2b'
+  class Time:
+    HH = '\x0b\x2c'
+    MIN = '\x0b\x2d'
+    SEC = '\x0b\x2e'
+    HHMIN23hr = '\x0b\x2f'
+    HHMIN12hr = '\x0b\x30'
 
 #picture handling is described in protocol section 4
 class Picture:
@@ -365,6 +372,33 @@ class Message:
     m = Message.SYN + m;
     return m
 
+  @staticmethod
+  def SetSystemTime():
+    data_length = 0
+    current_time = localtime()
+    year = int(str(current_time[0]),base=16)
+    month = int(str(current_time[1]),base=16)
+    day = int(str(current_time[2]),base=16)
+    hour = int(str(current_time[3]),base=16)
+    minute = int(str(current_time[4]),base=16)
+    dow = int(str(current_time[6]),base=16)
+    timezone = 0
+    m = ''
+    m = pack('H',year) + pack('B',month) + pack('B',day) + pack('B',hour) + pack('B',minute) + pack('B',dow) + pack('B',timezone) + m
+    m = '\x00' + m;#flag
+    m = '\x02' + m;#arglength (arg is 1x4 bytes long)
+    m = '\x02' + m;#subcommand
+    m = '\x05' + m;#main command
+    m = '\xab\xcd' + m;#packet serial
+    m = '\x00' + m;#source, dest addresses.
+    m = '\x00' + m;
+    m = '\x00' + m;
+    m = '\x00' + m;
+    m = pack('H',data_length) + m;
+    m = Message.Checksum(m) + m;
+    m = Message.SYN + m;
+    return m
+
   class File:
     def __init__(self,data,file_label='AB',filetype='T'):
       self.file_label=Message.FileLabel(file_label)
@@ -383,6 +417,34 @@ class Message:
       #m = m + Message.Checksum(file.data) + pack('H',len(file.data)) + file.file_label
       m = m +'\xb0\x00' + '\x00\x00' + file.file_label
     return m
+
+  @staticmethod
+  def StringFile(data, partition='E',file_label="string.txt"):
+    #build and return an emergency message with checksum backwards from data
+    messages = []
+    data_size = len(data)
+    num_messages = data_size/1024 + 1
+    payload_size = data_size/num_messages
+    for imsg in range(num_messages):
+      m = data[imsg*payload_size:imsg*payload_size+payload_size] #Message.Create(message)
+      data_length = len(m)
+      m = partition + pack('B',0) +  Message.FileLabel(file_label) + pack('L',data_size) + pack('H',payload_size) + pack('H',num_messages) + pack('H',imsg+1) + m
+      m = '\x00' + m;#flag
+      m = '\x06' + m;#arglength (arg is 1x4 bytes long)
+      m = '\x05' + m;#subcommand
+      m = '\x02' + m;#main command
+      m = '\xab\xcd' + m;#packet serial
+      m = '\x00' + m;#source, dest addresses.
+      m = '\x00' + m;
+      m = '\x00' + m;
+      m = '\x00' + m;
+      m = pack('H',data_length) + m;
+      m = Message.Checksum(m) + m;
+      m = Message.SYN + m;
+      if(num_messages is 1):
+        return m
+      messages.append(m)
+    return messages   
 
   @staticmethod
   def Picture(data, partition='E',file_label="AA"):
@@ -674,7 +736,24 @@ class Markup:
     'b12x7' : Font.b12x7,
     'b16x12' : Font.b16x12,
     'b22x12' : Font.b22x12,
-    'b32x8' : Font.b32x8
+    'b32x8' : Font.b32x8,
+    'mm/dd/yy':Date.MMDDYY.WithForwardSlashes,
+    'mm-dd-yy':Date.MMDDYY.WithDashes,
+    'mm.dd.yy':Date.MMDDYY.WithDots,
+    'dd/mm/yy':Date.DDMMYY.WithForwardSlashes,
+    'dd-mm-yy':Date.DDMMYY.WithDashes,
+    'yy':Date.YY,
+    'yyyy':Date.YYYY,
+    'month_num':Date.Month.Number,
+    'month_abbr':Date.Month.Abbreviation,
+    'date':Date.Day,
+    'dow_number':Date.DayOfWeek.Number,
+    'dow_abbr':Date.DayOfWeek.Abbreviation,
+    'hh':Date.Time.HH,
+    'min':Date.Time.MIN,
+    'sec':Date.Time.SEC,
+    'hhmin_23hr':Date.Time.HHMIN23hr,
+    'hhmin_12hr':Date.Time.HHMIN12hr
   } 
   
 

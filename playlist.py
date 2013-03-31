@@ -17,9 +17,10 @@ from JetFileIIProtocol import Message
 import time
 
 msgs = []
+msgs.append( Message.File('Today:{mm/dd/yy}{nl}{hhmin_12hr}:{sec}',file_label='time.TXT') )
 msgs.append( Message.File('WEATHER',file_label='WEATHER.TXT') )
-msgs.append( Message.File('NEWS',file_label='NEWS.TXT') )
-msgs.append( Message.File('SPORTS',file_label='SPORTS.TXT') )
+#msgs.append( Message.File('NEWS',file_label='NEWS.TXT') )
+#msgs.append( Message.File('SPORTS',file_label='SPORTS.TXT') )
 
 playlist = Message.WriteSystemFile(Message.Playlist(msgs))
 
