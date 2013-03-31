@@ -13,11 +13,11 @@
 
 
 import serial
-from JetFileIIProtocol import Font
-from JetFileIIProtocol import Animate
-from JetFileIIProtocol import Format
-from JetFileIIProtocol import Date
-from JetFileIIProtocol import Message
+from JetFileII import Font
+from JetFileII import Animate
+from JetFileII import Format
+from JetFileII import Date
+from JetFileII import Message
 displayMsg = Message.DisplayControlWithoutChecksum
 
 import re

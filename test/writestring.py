@@ -2,7 +2,7 @@
 # vim: set ts=2 expandtab:
 
 import serial
-from JetFileIIProtocol import Message
+from JetFileII import Message
 
 
 msg = Message.StringFile("Hello there. this is a new writefie implementation.",file_label='hello.txt')

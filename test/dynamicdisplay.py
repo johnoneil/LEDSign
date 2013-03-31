@@ -2,7 +2,7 @@
 # vim: set ts=2 expandtab:
 
 import serial
-from JetFileIIProtocol import Message
+from JetFileII import Message
 from struct import *
 
 led_sign_width = 128

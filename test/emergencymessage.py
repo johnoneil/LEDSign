@@ -23,7 +23,7 @@ import time
 import datetime
 from time import mktime
 from datetime import datetime
-from JetFileIIProtocol import Message
+from JetFileII import Message
 displayMsg = Message.DisplayControlWithoutChecksum
 
 

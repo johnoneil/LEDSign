@@ -13,7 +13,7 @@
 
 
 import serial
-from JetFileIIProtocol import Message
+from JetFileII import Message
 import time
 
 msgs = []
