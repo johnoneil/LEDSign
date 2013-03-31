@@ -164,6 +164,10 @@ class Format:
   NewFrame = '\x0c'
   NewLine = '\x0d'
   Halfspace = '\x82'
+  class Temperature:
+    Celsius = '\x0b\x31'
+    Farenheit = '\x0b\x33'
+    Humidity = '\x0b\x32'
   @staticmethod
   def Linespace(space):
     if space<0 or space > 9:
@@ -753,7 +757,10 @@ class Markup:
     'min':Date.Time.MIN,
     'sec':Date.Time.SEC,
     'hhmin_23hr':Date.Time.HHMIN23hr,
-    'hhmin_12hr':Date.Time.HHMIN12hr
+    'hhmin_12hr':Date.Time.HHMIN12hr,
+    'celsius':Format.Temperature.Celsius,
+    'farenheit':Format.Temperature.Farenheit,
+    'humidity':Format.Temperature.Humidity 
   } 
   
 

@@ -221,7 +221,7 @@ std::string TurnSignOn(void)
 	const INT16U dataLen = 0;
 	//build the message backwards from the payload (data) to facilitate 
   //calculating the checksum.
-	m = char(0x1) + m;//flag
+	m = char(0x0) + m;//flag
 	m = char(0x0) + m;//arglength (arg is 0 bytes long)
 	m = char(0x4) + m;//subcommand
 	m = char(0x4) + m;//main command
@@ -245,11 +245,11 @@ std::string TurnSignOff(const bool sayGoodbye = false)
   //calculating the checksum.
   if(sayGoodbye)
   {
-    m = INT32U2String(1) + m;
-  }else{
     m = INT32U2String(0) + m;
+  }else{
+    m = INT32U2String(1) + m;
   }
-	m = char(0x1) + m;//flag
+	m = char(0x0) + m;//flag
 	m = char(0x1) + m;//arglength (arg is 1x4 bytes long)
 	m = char(0x3) + m;//subcommand
 	m = char(0x4) + m;//main command
@@ -264,6 +264,30 @@ std::string TurnSignOff(const bool sayGoodbye = false)
 	
 	return m;
 }
+
+std::string TestCommand(void)
+{
+  std::string m;
+	const INT16U dataLen = 0;
+	//build the message backwards from the payload (data) to facilitate 
+  //calculating the checksum.
+	m = char(0x1) + m;//flag
+	m = char(0x0) + m;//arglength (arg is 1x4 bytes long)
+	m = char(0x1) + m;//subcommand
+	m = char(0x3) + m;//main command
+	m = INT16U2String(0xabcd) + m;//packet serial
+	m = char(0x0) + m;//source, dest addresses.
+	m = char(0x0) + m;
+	m = char(0x0) + m;
+	m = char(0x0) + m;
+	m = INT16U2String(dataLen) + m;
+	m = Message::Checksum(m) + m;
+	m = Message::SYN() + m;
+	
+	return m;
+}
+
+
 
 
 
