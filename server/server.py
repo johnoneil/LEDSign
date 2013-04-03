@@ -23,7 +23,9 @@ class LEDSignServer(object):
     self.tasks = []
     self.tasks.append( WeatherTask(self) )
     self.tasks.append( TimeTask(self) )
-    #self.tasks.append( NewsTask(self) )
+    self.tasks.append( NewsTask(self,file_label='NEWS1.TXT',url='http://online.wsj.com/xml/rss/3_8068.xml',num_stories=3) )
+    self.tasks.append( TimeTask(self) )
+    self.tasks.append( NewsTask(self,file_label='NEWS2.TXT',url='http://online.wsj.com/xml/rss/3_8068.xml',start_story=3,num_stories=3) )
     #self.tasks.append( EmailCheckTask(self) )
     #self.tasks.append( NowPlayingTask(self) )
 

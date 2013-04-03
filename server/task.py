@@ -14,6 +14,7 @@ import time
 from JetFileII import Message
 import pywapi
 import datetime
+import feedparser
 
 #"abstract" interface
 class Task(object):
@@ -122,6 +123,52 @@ class WeatherTask(Task):
 
   def UpdateText(self):
     text = self.GenerateWeatherConditionsText()
+    if self.text != text:
+      self.text = text
+      msg = Message.WriteText(self.text,disk_partition=self.partition,file_label=self.file_label)
+      self.led_sign.SendMessage(msg)
+      time.sleep(1)
+  def GeneratePlaylistEntry(self):
+    return Message.File(self.text,file_label=self.file_label,partition=self.partition)
+
+
+class NewsTask(Task):
+  def __init__(self, led_sign_server,file_label='NEWS.TXT',url=None,start_story=0,num_stories=3):
+    self.url = url
+    self.start_story = start_story
+    self.num_stories = num_stories
+    self.led_sign = led_sign_server
+    self.update_interval = 60 * 60 #update once every hour
+    self.last_update = None
+    self.partition = 'E'
+    self.file_label = file_label
+    self.text = ''
+
+  def Service(self):
+    if(self.last_update is None):
+      self.last_update = time.time()
+    current_time = time.time()
+    elapsed_time = current_time - self.last_update
+    if( elapsed_time >= self.update_interval ):
+      screen_msg = UpdateText()
+      self.led_sign.SendMessage(screen_msg)
+      time.sleep(1)
+      self.last_update = current_time
+  def GenerateNewsText(self):
+    #url = 'http://news.google.com.br/news?pz=1&cf=all&ned=us&hl=en&output=rss' 
+    #url = 'http://online.wsj.com/xml/rss/3_8068.xml'
+    if self.url is None:
+      return 'No news url provided'
+    text = ''
+    #text = text + '{typeseton}{5x5}{nonein}{noneout}{top}{left}{red}Wall Street Journal{nl}'
+    text = text + '{typesetoff}{amber}{b16x12}{middle}{fastest}{moveleftin}{moveleftout}'
+    feed = feedparser.parse(self.url)
+    for post in feed.entries[self.start_story:self.start_story+self.num_stories]:
+      text = text + post.title.encode('UTF-8') + ' {red}{5x5} *** WSJ U.S. News *** {b16x12}{amber}'
+    return text
+
+  def UpdateText(self):
+    text = self.GenerateNewsText()
     if self.text != text:
       self.text = text
       msg = Message.WriteText(self.text,disk_partition=self.partition,file_label=self.file_label)
