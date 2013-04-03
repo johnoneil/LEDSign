@@ -201,14 +201,14 @@ class Format:
     def ReplaceMarkupTagWithArg(match):
       code = match.group(1).strip().lower()
       arg = match.group(2).strip().lower()
-      print "code: " + code +" arg: " + arg
+      #print "code: " + code +" arg: " + arg
       if code in Markup.Registry:
         #pass
         return Markup.Registry[code](arg)
       return match.group(0)
     def ReplaceMarkupTags(match):
       code = match.group(1).strip().lower()
-      print "code is " + code
+      #print "code is " + code
       if code in Markup.Registry:
           return Markup.Registry[code]
       return match.group(0)
@@ -217,7 +217,7 @@ class Format:
     regex = re.compile(r"\{(.*?)\}")
     text = re.sub(regex_with_arg, ReplaceMarkupTagWithArg, text)
     text = re.sub(regex, ReplaceMarkupTags, text)
-    print "subbed text: " + text
+    #print "subbed text: " + text
     return text
 
 class Date:
@@ -307,7 +307,7 @@ class Message:
     return str('%c%c' % (65 + int(msgId / 26), 65 + (msgId % 26)))
   @staticmethod
   def MsgId2DiskFolderFilename(msgId,disk='E',folder='T'):
-    print "MsgId2DiskFolderFilename returns filename " + Message.MsgId2Filename(msgId)
+    #print "MsgId2DiskFolderFilename returns filename " + Message.MsgId2Filename(msgId)
     return '\x0f' + disk + folder + Message.MsgId2Filename(msgId)
 
   @staticmethod
@@ -404,10 +404,10 @@ class Message:
     return m
 
   class File:
-    def __init__(self,data,file_label='AB',filetype='T'):
+    def __init__(self,data,file_label='AB',filetype='T',partition='E'):
       self.file_label=Message.FileLabel(file_label)
-      print "File label: " + self.file_label + " "+ self.file_label.encode('hex')
-      self.data=Message.WriteText(data,file_label=file_label)
+      #print "File label: " + self.file_label + " "+ self.file_label.encode('hex')
+      self.data=Message.WriteText(data,file_label=file_label,disk_partition=partition)
       self.filetype=filetype
 
   @staticmethod
