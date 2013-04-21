@@ -40,7 +40,7 @@ class TimeTask(Task):
     self.led_sign = led_sign_server
     self.update_interval = 60 * 60 * 24 #update timme once per day in seconds
     self.last_update = None
-    self.message = '{pause=10}{fastest}{middle}{movedownin}{moveupout}{7x6}{amber}{dow_abbr}{month_abbr} {date},{yyyy}{nl}{22x18}{moveupin}{movedownout}{green}{hhmin_12hr}'
+    self.message = '{pause=10}{fastest}{middle}{center}{movedownin}{moveupout}{7x6}{amber}{dow_abbr}{month_abbr} {date},{yyyy}{nl}{22x18}{moveupin}{movedownout}{green}{hhmin_12hr}'
     self.partition = 'E'
     self.file_label = 'TIME.TXT'
   def Service(self):
@@ -52,7 +52,7 @@ class TimeTask(Task):
       update_time_msg = Message.SetSystemTime()
       self.led_sign.SendMessage(update_time_msg)
       time.sleep(1)
-      screen_msg = UpdateText()
+      screen_msg = self.UpdateText()
       self.led_sign.SendMessage(screen_msg)
       time.sleep(1)
       self.last_update = current_time
@@ -82,7 +82,7 @@ class WeatherTask(Task):
     current_time = time.time()
     elapsed_time = current_time - self.last_update
     if( elapsed_time >= self.update_interval ):
-      screen_msg = UpdateText()
+      screen_msg = self.UpdateText()
       self.led_sign.SendMessage(screen_msg)
       time.sleep(1)
       self.last_update = current_time
@@ -150,7 +150,7 @@ class NewsTask(Task):
     current_time = time.time()
     elapsed_time = current_time - self.last_update
     if( elapsed_time >= self.update_interval ):
-      screen_msg = UpdateText()
+      screen_msg = self.UpdateText()
       self.led_sign.SendMessage(screen_msg)
       time.sleep(1)
       self.last_update = current_time

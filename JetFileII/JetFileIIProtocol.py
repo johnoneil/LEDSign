@@ -630,6 +630,8 @@ class Markup:
     'nl' : Format.NewLine,
     'newframe' : Format.NewFrame,
     'halfspace' : Format.Halfspace,
+    'flashon' : Format.Flash.On,
+    'flashoff' : Format.Flash.Off,
     'red' : Font.Color.Red,
     'green' : Font.Color.Green,
     'amber' : Font.Color.Amber,

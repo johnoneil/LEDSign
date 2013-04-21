@@ -10,23 +10,25 @@
 #
 ###############################################################################
 
+import sys
 import daemon #python-daemon package
 import time
 import serial
 
 from task import *
+from pop3 import pop3EmailTask
 
 class LEDSignServer(object):
-  def __init__(self,port,baud_rate):
+  def __init__(self,port,baud_rate,user='',pw=''):
     self.port = serial.Serial(port, baud_rate)
 
     self.tasks = []
     self.tasks.append( WeatherTask(self) )
     self.tasks.append( TimeTask(self) )
-    self.tasks.append( NewsTask(self,file_label='NEWS1.TXT',url='http://online.wsj.com/xml/rss/3_8068.xml',num_stories=3) )
-    self.tasks.append( TimeTask(self) )
-    self.tasks.append( NewsTask(self,file_label='NEWS2.TXT',url='http://online.wsj.com/xml/rss/3_8068.xml',start_story=3,num_stories=3) )
-    #self.tasks.append( EmailCheckTask(self) )
+    #self.tasks.append( NewsTask(self,file_label='NEWS1.TXT',url='http://online.wsj.com/xml/rss/3_8068.xml',num_stories=3) )
+    #self.tasks.append( TimeTask(self) )
+    #self.tasks.append( NewsTask(self,file_label='NEWS2.TXT',url='http://online.wsj.com/xml/rss/3_8068.xml',start_story=3,num_stories=3) )
+    self.tasks.append( pop3EmailTask(self,user=user,pw=pw) )
     #self.tasks.append( NowPlayingTask(self) )
 
     #have those tasks that need to update the sign
@@ -70,7 +72,13 @@ class LEDSignServer(object):
 
 def main():
   #with daemon.DaemonContext():
-  server = LEDSignServer(port='/dev/ttyS0', baud_rate=19200)
+  if(len(sys.argv)<3):
+    print "USAGE: server <imap user> <imap password>"
+    sys.exit(0)
+
+  user = sys.argv[1]
+  pw = sys.argv[2]
+  server = LEDSignServer(port='/dev/ttyS0', baud_rate=19200,user=user,pw=pw)
   server.Run() 
 
 if __name__ == "__main__":
