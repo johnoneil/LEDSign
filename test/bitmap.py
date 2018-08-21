@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # vim: set ts=2 expandtab:
 
 import serial
@@ -34,7 +34,7 @@ print 'Uploading file ' + input_filename + ' as file ' + uploaded_filename
 
 msgs = Message.Picture(data,file_label=uploaded_filename)
 
-port = '/dev/ttyS0'
+port = '/dev/ttyUSB0'
 baudRate = 19200
 ser = serial.Serial(port, baudRate)
 for msg in msgs:
