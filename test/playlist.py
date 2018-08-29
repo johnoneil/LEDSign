@@ -19,9 +19,9 @@ import time
 
 files = []
 #self, data, msgId, filetype='T',disk='E'
-files.append(Message.File('{red}{5x5}{moveRightIn}{moveLeftOut}PLAYLIST ONE', msgId=1))
-files.append(Message.File('{green}{5x5}{moveLeftIn}{moveRightOut}PLAYLIST TWO', msgId=2))
-files.append(Message.File('{amber}{5x5}{moverightin}{moveRightOut}PLAYLIST THREE', msgId=3))
+files.append(Message.File('{pause=5}{middle}{moveRightIn}{moveLeftOut}{b16x12}{green}{hhmin_12hr}{nl}{amber}{7x6}{dow_abbr}, {month_abbr} {date} {yyyy}', msgId=1))
+files.append(Message.File('{pause=1}{green}{5x5}{moveLeftIn}{moveRightOut}PLAYLIST TWO', msgId=2))
+files.append(Message.File('{pause=1}{red}{5x5}{moverightin}{moveRightOut}PLAYLIST THREE', msgId=3))
 
 
 port = '/dev/ttyUSB0'
