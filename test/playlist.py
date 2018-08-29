@@ -14,31 +14,34 @@
 
 import serial
 from JetFileII import Message
+displayMsg = Message.DisplayControlWithoutChecksum
 import time
 
-msgs = []
-msgs.append( Message.File('Today:{mm/dd/yy}{nl}{hhmin_12hr}:{sec}',file_label='time.TXT') )
-msgs.append( Message.File('WEATHER',file_label='WEATHER.TXT') )
-#msgs.append( Message.File('NEWS',file_label='NEWS.TXT') )
-#msgs.append( Message.File('SPORTS',file_label='SPORTS.TXT') )
+files = []
+#self, data, msgId, filetype='T',disk='E'
+files.append(Message.File('{red}{5x5}{moveRightIn}{moveLeftOut}PLAYLIST ONE', msgId=1))
+files.append(Message.File('{green}{5x5}{moveLeftIn}{moveRightOut}PLAYLIST TWO', msgId=2))
+files.append(Message.File('{amber}{5x5}{moverightin}{moveRightOut}PLAYLIST THREE', msgId=3))
 
-playlist = Message.WriteSystemFile(Message.Playlist(msgs))
-
-#print "Playlist is: " + playlist.encode('hex')
-#print playlist
 
 port = '/dev/ttyUSB0'
 baudRate = 19200
 ser = serial.Serial(port, baudRate)
 
-time.sleep(1)
+playlist = Message.Playlist(files)
 
-for msg in msgs:
+for f in files:
   #print msg.data.encode("hex")
-  x = ser.write(msg.data)
+  x = ser.write(f.data)
   time.sleep(1)
 
 x = ser.write(playlist)
+
+s = ser.read(len(playlist))
+print("************response**********")
+print(s)
+h = ":".join("{:02x}".format(ord(c)) for c in s)
+print(h)
 
 ser.close()
 

@@ -301,10 +301,21 @@ class Message:
       return m.Header + m.BeginCommand + m.WriteFile + m.MsgId2DiskFolderFilename(msgId) + m.Protocol + f.InterpretMarkup(text) + m.Coda
   @staticmethod
   def MsgId2Filename(msgId):
-    #asciiMajor = 65 + int(msgId/26)
-    #asciiMinor = 65 + int(msgId % 26)
-    #return '{0:01c}{0:01c}'.format(asciiMajor,asciiMinor)
-    return str('%c%c' % (65 + int(msgId / 26), 65 + (msgId % 26)))
+    """
+    In JetFileII, with or without checksum filenames are limted to 2 characters.
+    So if the msgID is not a string of two characters, it will interpret
+    a single integer value as a 2 character string
+    """
+    if type(msgId) is str:
+      msgId = msgId[:2]
+      return msgId
+    else:
+      #asciiMajor = 65 + int(msgId/26)
+      #asciiMinor = 65 + int(msgId % 26)
+      #return '{0:01c}{0:01c}'.format(asciiMajor,asciiMinor)
+      return str('%c%c' % (65 + int(msgId / 26), 65 + (msgId % 26)))
+  
+  
   @staticmethod
   def MsgId2DiskFolderFilename(msgId,disk='E',folder='T'):
     #print "MsgId2DiskFolderFilename returns filename " + Message.MsgId2Filename(msgId)
@@ -328,9 +339,11 @@ class Message:
 
   @staticmethod
   def FileLabel(label):
-    if(len(label) < 12):
-      return label.ljust(12,'\x00')
-    elif (len(label) > 12):
+    l = len(label.encode('utf-8'))
+    if(l < 12):
+      newlabel = label.ljust(12,'\x00')
+      return newlabel
+    elif (l > 12):
       return label[:12]
     return label
 
@@ -356,13 +369,40 @@ class Message:
     return m
 
   @staticmethod
+  def getSystemFile(file_label='SEQUENT.SYS'):
+    """
+    Get system file as per (2).Read System Files (0x0102)
+    JetFileIIv2.8.7_EN
+    """
+    data_length = 0
+    m = '' # no data
+    m = '\x00\x00' + m # packet size (?)
+    m = '\x00\x01' + m # packet serial number (?) counted from 1
+    m = Message.FileLabel(file_label) + m
+    m = '\x00' + m;#flag
+    m = '\x04' + m;#arglength (arg is 1x4 bytes long)
+    m = '\x02' + m;#subcommand
+    m = '\x01' + m;#main command
+    m = '\xab\xcd' + m;#packet serial
+    m = '\x00' + m; # dest address
+    m = '\x00' + m; # source address
+    m = pack('H',data_length) + m; # data len
+    m = Message.Checksum(m) + m; # checksum
+    m = Message.SYN + m; # sync
+    return m
+
+  @staticmethod
   def WriteSystemFile(file_contents, file_label='SEQUENT.SYS'):
     #build and return an emergency message with checksum backwards from data
     m = file_contents #Message.Create(message)
-    data_length = len(m)
-    m = pack('L',data_length) +  pack('H',data_length) + pack('H',1) + pack('H',1) + pack('H',0) + m
+    data_length = len(file_contents)
+    #m = pack('L',data_length) + m
+    #m = pack('H',data_length) + m
+    #m = pack('H',1) + m # 
+    #m = pack('H',1) + m
+    #m = pack('H',0) + m
     m = Message.FileLabel(file_label) + m
-    m = '\x00' + m;#flag
+    m = '\x01' + m;#flag
     m = '\x06' + m;#arglength (arg is 1x4 bytes long)
     m = '\x02' + m;#subcommand
     m = '\x02' + m;#main command
@@ -373,7 +413,8 @@ class Message:
     m = '\x00' + m;
     m = pack('H',data_length) + m;
     m = Message.Checksum(m) + m;
-    m = Message.SYN + m;
+    #m = Message.SYN + m;
+    m = '\x55\xa7' + m;
     return m
 
   @staticmethod
@@ -404,22 +445,32 @@ class Message:
     return m
 
   class File:
-    def __init__(self,data,file_label='AB',filetype='T',partition='E'):
-      self.file_label=Message.FileLabel(file_label)
+    def __init__(self, data, msgId, filetype='T',disk='E'):
+      #self.file_label=Message.FileLabel(file_label)
       #print "File label: " + self.file_label + " "+ self.file_label.encode('hex')
-      self.data=Message.WriteText(data,file_label=file_label,disk_partition=partition)
+      #self.data=Message.WriteText(data,file_label=file_label,disk_partition=partition)
+      self.data = Message.DisplayControlWithoutChecksum.Create(msgId,disk=disk,folder=filetype,text=data)
+      self.file_label = Message.MsgId2Filename(msgId);
       self.filetype=filetype
+      self.disk = disk
+
+    def path(self):
+      return '\x0f' + self.disk + self.filetype + self.file_label
 
   @staticmethod
-  def Playlist(files, partition='E', file_label='SEQUENT.SYS'):
-    #build and return an emergency message with checksum backwards from data
-    num_files = len(files)
-    m = 'SQ' + '\x04' + '\x00' + pack('H', num_files) + pack('H',0x0)
+  def Playlist(files):
+    """
+    files is a list of objects that implement a 'path' member
+    where path is returned in the form: '\x0fETAC'
+    """
+    m = ''
+    m = m + '\x00\x00\x00\x00\x00\x01Z00'
+    m = m + '\x02' # strt symbol of command
+    m = m + 'E' # command code
+    m = m + '.SL'
     for file in files:
-      m = m + partition + file.filetype + '\x0f' + Message.WeekRepetition()
-      m = m + Message.DateTimeStructure(year=2008,month=3,day=16,hour=0,minute=0) + Message.DateTimeStructure(year=2008,month=3,day=16,hour=0,minute=0)
-      #m = m + Message.Checksum(file.data) + pack('H',len(file.data)) + file.file_label
-      m = m +'\xb0\x00' + '\x00\x00' + file.file_label
+      m = m + file.path() #'\x0fETAB'
+    m = m + '\x03' # 0x04 = in-echo, 0x03 = echo
     return m
 
   @staticmethod
