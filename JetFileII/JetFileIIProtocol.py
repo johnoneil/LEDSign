@@ -300,26 +300,31 @@ class Message:
       m = Message
       return m.Header + m.BeginCommand + m.WriteFile + m.MsgId2DiskFolderFilename(msgId) + m.Protocol + f.InterpretMarkup(text) + m.Coda
   @staticmethod
-  def MsgId2Filename(msgId):
+  def MsgId2Filename(msgId, fileType='T'):
     """
     In JetFileII, with or without checksum filenames are limted to 2 characters.
     So if the msgID is not a string of two characters, it will interpret
     a single integer value as a 2 character string
     """
-    if type(msgId) is str:
-      msgId = msgId[:2]
-      return msgId
+    if fileType != 'T':
+      #picture filename can only be ONE character
+      # see Appendix 1 Comparison Table for Valid File Labels and Value
+      return str('%c' % (65 + int(msgId / 26)))
     else:
-      #asciiMajor = 65 + int(msgId/26)
-      #asciiMinor = 65 + int(msgId % 26)
-      #return '{0:01c}{0:01c}'.format(asciiMajor,asciiMinor)
-      return str('%c%c' % (65 + int(msgId / 26), 65 + (msgId % 26)))
+      if type(msgId) is str:
+        msgId = msgId[:2]
+        return msgId
+      else:
+        #asciiMajor = 65 + int(msgId/26)
+        #asciiMinor = 65 + int(msgId % 26)
+        #return '{0:01c}{0:01c}'.format(asciiMajor,asciiMinor)
+        return str('%c%c' % (65 + int(msgId / 26), 65 + (msgId % 26)))
   
   
   @staticmethod
   def MsgId2DiskFolderFilename(msgId,disk='E',folder='T'):
     #print "MsgId2DiskFolderFilename returns filename " + Message.MsgId2Filename(msgId)
-    return '\x0f' + disk + folder + Message.MsgId2Filename(msgId)
+    return '\x0f' + disk + folder + Message.MsgId2Filename(msgId, fileType=folder)
 
   @staticmethod
   def Checksum(message):
@@ -444,18 +449,38 @@ class Message:
     m = Message.SYN + m;
     return m
 
-  class File:
-    def __init__(self, data, msgId, filetype='T',disk='E'):
+  class TextFile:
+    def __init__(self, data, msgId,disk='E', upload=True):
       #self.file_label=Message.FileLabel(file_label)
       #print "File label: " + self.file_label + " "+ self.file_label.encode('hex')
       #self.data=Message.WriteText(data,file_label=file_label,disk_partition=partition)
-      self.data = Message.DisplayControlWithoutChecksum.Create(msgId,disk=disk,folder=filetype,text=data)
+      self.data = Message.DisplayControlWithoutChecksum.Create(msgId,disk=disk,folder='T',text=data)
       self.file_label = Message.MsgId2Filename(msgId);
-      self.filetype=filetype
+      self.filetype='T'
       self.disk = disk
+      self.upload = upload
 
     def path(self):
       return '\x0f' + self.disk + self.filetype + self.file_label
+
+  class SmallPictureFile:
+    def __init__(self, data, msgId,disk='E', upload=True):
+      #self.file_label=Message.FileLabel(file_label)
+      #print "File label: " + self.file_label + " "+ self.file_label.encode('hex')
+      #self.data=Message.WriteText(data,file_label=file_label,disk_partition=partition)
+      if data:
+        self.data = Message.UploadSmallPicture(data, partition=disk,msgId=msgId)
+        self.upload = upload
+      else:
+        self.data = None
+        self.upload = False
+      self.file_label = Message.MsgId2Filename(msgId)
+      self.fullpath = Message.MsgId2DiskFolderFilename(msgId, disk=disk, folder='P')
+      self.filetype='P'
+      self.disk = disk
+
+    def path(self):
+      return self.fullpath
 
   @staticmethod
   def Playlist(files):
@@ -502,8 +527,68 @@ class Message:
     return messages   
 
   @staticmethod
+  def UploadSmallPicture(data, partition='E', msgId=1):
+    """
+    v1 protocol to upload a picture up to 1024 bytes
+    see Table2.3.1 on pg 19 of 205
+    """
+    m = ''
+    m = m + '\x00\x00\x00\x00\x00\x01Z00'
+    m = m + '\x02' # strt symbol of command
+    m = m + 'I' # command code
+    m = m + Message.MsgId2Filename(msgId,fileType='P') #'\x0fETAB'
+    if data:
+      m = m + data
+    m = m + '\x03' # x04=in-echo x03=echo
+    return m
+
+  @staticmethod
+  def UploadArrayPictures(data, width, height, numFrames, partition='E', msgId=1):
+    """
+    v1 protocol to upload an array of pictures, i.e. animation
+    see Table7.1.1 Format of Array Picture File
+    """
+    m = ''
+    m = m + '\x00\x00\x00\x00\x00\x01Z00'
+    m = m + '\x02' # strt symbol of command
+    m = m + 'CAPD' # command code
+    #m = m + '\x01' # x01 = GR (16 bit 8:8 format)
+    m = m + '\x00' # RGRGRGRG(2bit,1:1 format)
+    m = m + '\x00' # not skip invalid display data in last frame
+    m = m + pack('H', width)
+    m = m + pack('H', height)
+    m = m + pack('H', 2) # bits per point.
+    m = m + pack('H', numFrames)
+    m = m + pack('L', len(data))
+    m = m + pack('L', len(data)/numFrames)
+    m = m + pack('H', width) # last data width
+    m = m + '\x00\x00' # reserved
+    return m
+
+
+  @staticmethod
+  def ArrayAnimationFrame(imgData, width, height,):
+    """
+    Form header and body of single animation frame
+    for use in uploading array type pictures
+    """
+    m = ''
+    m = m + 'FH'
+    if(height > 16):
+      m = m + '\x00'
+      m = m + '\x01'
+    else:
+      m = m + pack('H', height) # num rows in frame (max 16)
+      m = m + '\x00'
+    m = m + '' 
+
+  @staticmethod
   def Picture(data, partition='E',file_label="AA"):
-    #build and return an emergency message with checksum backwards from data
+    """
+    Build and return an array of strings, each string representing a single
+    picture upload packet. This allows uploding windows bitmaps (Red/Green)
+    representing pictures larger than 1024 bytes.
+    """
     messages = []
     data_size = len(data)
     num_messages = data_size/512 + 1
@@ -524,6 +609,7 @@ class Message:
       m = pack('H',data_length) + m;
       m = Message.Checksum(m) + m;
       m = Message.SYN + m;
+      m = '\x00\x00\x00\x00\x00' + m
       messages.append(m)
     return messages   
 
@@ -593,6 +679,47 @@ class Message:
     m = '\x00' + m;
     m = '\x00' + m;
     m = '\x00' + m;
+    m = pack('H',data_length) + m;
+    m = Message.Checksum(m) + m;
+    m = Message.SYN + m;
+    return m
+
+  @staticmethod
+  def AutoTest():
+    """
+    This command is used to make the LED sign test automatically (The test order: all
+bright->all Red-> all Green->all Blue-> scan horizontally-> scan vertically>the basic
+parameter of the sign)
+    """
+    m = ''
+    data_length = 0
+    m = '\x00' + m; # flag
+    m = '\x00' + m; # arglength
+    m = '\x02' + m; # subcommand = auto test (0x02)
+    m = '\x03' + m; # main command = test command(0x03)
+    m = '\xab\xcd' + m;#packet serial
+    m = '\x00\x00' + m; # source addr
+    m = '\x00\x00' + m; # dest addr
+    m = pack('H',data_length) + m;
+    m = Message.Checksum(m) + m;
+    m = Message.SYN + m;
+    return m
+
+  @staticmethod
+  def StopTest():
+    """
+    This command is used to end the test on the LED sign. The format as the following
+table:
+    """
+    m = ''
+    data_length = 0
+    m = '\x00' + m; # flag
+    m = '\x00' + m; # arglength
+    m = '\x09' + m; # subcommand = stop test (0x09)
+    m = '\x03' + m; # main command = test command(0x03)
+    m = '\xab\xcd' + m;#packet serial
+    m = '\x00\x00' + m; # source addr
+    m = '\x00\x00' + m; # dest addr
     m = pack('H',data_length) + m;
     m = Message.Checksum(m) + m;
     m = Message.SYN + m;
