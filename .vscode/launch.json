@@ -11,10 +11,31 @@
       "program": "${workspaceFolder}/test/ledsign.py",
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal",
-      "pythonPath": "~/.virtualenvs/led"
-      //"pythonPath": "${config:python.pythonPath}",
-      //"python.pythonPath":"~/.virtualenvs/led"
-      //"python.venvPath": "",
+      "env": {"PYTHONPATH":"${workspaceRoot}"},
+      
+    },
+    {
+      "name": "Set playlist test",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/test/playlist.py",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "env": {"PYTHONPATH":"${workspaceRoot}"},
+      
+    },
+    {
+      "name": "Picture upload test",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/test/bitmap.py",
+      "args": [
+        "images/awsome.bmp",
+        "B"
+      ],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "env": {"PYTHONPATH":"${workspaceRoot}"},
       
     },
     {
