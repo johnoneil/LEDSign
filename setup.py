@@ -12,7 +12,7 @@ setup(
     description='Partial implementation of JetFileII API used for Chainzone (Texcellent) LED Signs. Sigma 3000 compatible.',
     long_description=open('README.md').read(),
     install_requires=[
-        "serial >= 2.5.2",
+        "pyserial >= 2.5.2",
     ],
 )
 
