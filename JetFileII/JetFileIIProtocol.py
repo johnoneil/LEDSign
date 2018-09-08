@@ -290,7 +290,7 @@ class Message:
   Protocol = '\x06'
   BeginCommand = '\x02'
   WriteFile = 'A'
-  Coda = '\x04'
+  Coda = '\x03'
   SYN = '\x55\xa7'
   class DisplayControlWithoutChecksum:
     @staticmethod
@@ -384,7 +384,7 @@ class Message:
     m = '\x00\x00' + m # packet size (?)
     m = '\x00\x01' + m # packet serial number (?) counted from 1
     m = Message.FileLabel(file_label) + m
-    m = '\x00' + m;#flag
+    m = '\x01' + m;#flag
     m = '\x04' + m;#arglength (arg is 1x4 bytes long)
     m = '\x02' + m;#subcommand
     m = '\x01' + m;#main command
@@ -401,21 +401,19 @@ class Message:
     #build and return an emergency message with checksum backwards from data
     m = file_contents #Message.Create(message)
     data_length = len(file_contents)
-    #m = pack('L',data_length) + m
-    #m = pack('H',data_length) + m
-    #m = pack('H',1) + m # 
-    #m = pack('H',1) + m
-    #m = pack('H',0) + m
+    m = '\x00\x00' + m # 2 bytes: Note
+    m = pack('H', 1) + m # current packet. from 0x01
+    m = pack('H', 1) + m # number of packets
+    m = pack('H', data_length) + m # 2 bytes packet size
+    m = pack('L', data_length) + m # 4 bytes total file size    
     m = Message.FileLabel(file_label) + m
-    m = '\x01' + m;#flag
-    m = '\x06' + m;#arglength (arg is 1x4 bytes long)
-    m = '\x02' + m;#subcommand
-    m = '\x02' + m;#main command
-    m = '\xab\xcd' + m;#packet serial
-    m = '\x00' + m;#source, dest addresses.
-    m = '\x00' + m;
-    m = '\x00' + m;
-    m = '\x00' + m;
+    m = '\x01' + m; #flag
+    m = '\x06' + m; #arglength (arg is 1x4 bytes long)
+    m = '\x02' + m; #subcommand
+    m = '\x02' + m; #main command
+    m = '\xab\xcd' + m; # packet serial
+    m = '\x00\x00' + m; # source address
+    m = '\x00\x00' + m; # dest address
     m = pack('H',data_length) + m;
     m = Message.Checksum(m) + m;
     #m = Message.SYN + m;
@@ -456,12 +454,68 @@ class Message:
       #self.data=Message.WriteText(data,file_label=file_label,disk_partition=partition)
       self.data = Message.DisplayControlWithoutChecksum.Create(msgId,disk=disk,folder='T',text=data)
       self.file_label = Message.MsgId2Filename(msgId);
+      self.longFileName = Message.FileLabel(self.file_label)
       self.filetype='T'
       self.disk = disk
       self.upload = upload
+      self.fileSize = len(data)
+      self.checksum = Message.Checksum(data)
 
     def path(self):
       return '\x0f' + self.disk + self.filetype + self.file_label
+
+  @staticmethod
+  def WriteTextFilewithChecksum(text, longFilenme, drive='E'):
+    #build and return an emergency message with checksum backwards from data
+    m = text
+    data_length = len(text)
+    m = pack('H', 1) + m # current packet
+    m = pack('H', 1) + m # number of packets
+    m = pack('H', data_length) + m # packet size
+    m = pack('L', data_length) + m# file size (4 bytes)
+    m = Message.FileLabel(longFilenme) + m
+    m = '\x00' + m # no buzzer sound
+    m = drive + m
+
+    m = '\x00' + m #flag
+    m = '\x01' + m #arglength (arg is 1x4 bytes long)
+    m = '\x03' + m #subcommand
+    m = '\x04' + m #main command
+    m = '\xab\xcd' + m #packet serial
+    m = '\x00' + m #source, dest addresses.
+    m = '\x00' + m
+    m = '\x00' + m
+    m = '\x00' + m
+    m = pack('H',data_length) + m
+    m = Message.Checksum(m) + m
+    m = Message.SYN + m
+    return m
+
+  @staticmethod
+  def ListFilesInFolder(drive='E', folder='T'):
+    #build and return an emergency message with checksum backwards from data
+    m = '' # no data
+
+    filepath = 'E:\T\\x00'
+
+    m = filepath + m
+
+    m = '\x00' # flag: use designated path
+
+    #m = '\x01' + m #arglength (arg is 1x4 bytes long)
+    m = pack('B', (len(filepath) + 3) / 4)
+
+    m = '\x0b' + m #subcommand
+    m = '\x07' + m #main command
+    m = '\xab\xcd' + m #packet serial
+    m = '\x00\x00' + m # source addr
+    m = '\x00\x00' + m # dest addresses.
+    m = pack('H', 0) + m; # data length
+    m = Message.Checksum(m) + m;
+    m = Message.SYN + m;
+    return m
+
+  
 
   class SmallPictureFile:
     def __init__(self, data, msgId,disk='E', upload=True):
@@ -485,6 +539,8 @@ class Message:
   @staticmethod
   def Playlist(files):
     """
+    This is the simpler method of writing playlists (v1.0) that
+    only supports filenames of max 2 characters. Works though.
     files is a list of objects that implement a 'path' member
     where path is returned in the form: '\x0fETAC'
     """
@@ -496,6 +552,21 @@ class Message:
     for file in files:
       m = m + file.path() #'\x0fETAB'
     m = m + '\x03' # 0x04 = in-echo, 0x03 = echo
+    return m
+
+  @staticmethod
+  def PlaylistFileFormat(files):
+    #build and return an emergency message with checksum backwards from data
+    num_files = len(files)
+    m = 'SQ' + '\x04' + '\x00' + pack('H', num_files) + '\x00\x00'
+    for file in files:
+      m = m + file.disk + file.filetype + '\x0f' + Message.WeekRepetition()
+      m = m + Message.DateTimeStructure(year=2008,month=3,day=16,hour=0,minute=0) # begin time
+      m = m + Message.DateTimeStructure(year=2008,month=3,day=16,hour=0,minute=0) # send time
+      m = m + Message.Checksum(file.data)
+      m = m + pack('H',len(file.data))
+      m = m + file.longFileName
+      #m = m + pack('L', file.checksum) # checksum of file (UWORD)
     return m
 
   @staticmethod
@@ -594,22 +665,27 @@ class Message:
     num_messages = data_size/512 + 1
     payload_size = data_size/num_messages
     for imsg in range(num_messages):
-      m = data[imsg*payload_size:imsg*payload_size+payload_size] #Message.Create(message)
+      m = data[imsg*payload_size:imsg*payload_size+payload_size]
       data_length = len(m)
-      m = partition + pack('B',0) +  Message.FileLabel(file_label) + pack('L',data_size) + pack('H',payload_size) + pack('H',num_messages) + pack('H',imsg+1) + m
-      m = '\x00' + m;#flag
-      m = '\x06' + m;#arglength (arg is 1x4 bytes long)
-      m = '\x06' + m;#subcommand
-      m = '\x02' + m;#main command
-      m = '\xab\xcd' + m;#packet serial
-      m = '\x00' + m;#source, dest addresses.
-      m = '\x00' + m;
-      m = '\x00' + m;
-      m = '\x00' + m;
+      m = pack('H', imsg+1) + m # current packet, starting at 1 (2 bytes)
+      m = pack('H',num_messages) + m # number of packets total (2 bytes)
+      m = pack('H',payload_size) + m # size of  ll packets (2 bytes) all should be the same size
+      m = pack('L',data_size) + m # total file size (2 bytes)
+      m = Message.FileLabel(file_label) + m # file label (12 bytes, padded with \x00 if necessary)
+      m = '\x00' + m # reserved, must be 'x00 (one byte)
+      m = partition + m # partition (one byte)
+      
+      m = '\x00' + m; # flag 0x01 == 'in-echo' 0x00 == 'echo'
+      m = '\x06' + m; # arglength (arg is 1x4 bytes long)
+      m = '\x06' + m; # subcommand
+      m = '\x02' + m; # main command
+      m = '\xab\xcd' + m; # packet serial
+      m = '\x00\x00' + m; # source address
+      m = '\x00\x00' + m; # dest address
       m = pack('H',data_length) + m;
       m = Message.Checksum(m) + m;
       m = Message.SYN + m;
-      m = '\x00\x00\x00\x00\x00' + m
+      #m = '\x00\x00\x00\x00\x00' + m
       messages.append(m)
     return messages   
 
@@ -628,7 +704,7 @@ class Message:
     m = Message.Create(msg);
     data_length = len(m)
     m = pack('H',1) + '\x00' + '\x00' + m;#time, sound, reserved
-    m = '\x00' + m;#flag
+    m = '\x01' + m;#flag
     m = '\x01' + m;#arglength (arg is 1x4 bytes long)
     m = '\x09' + m;#subcommand
     m = '\x02' + m;#main command
@@ -651,8 +727,8 @@ class Message:
       m = pack('L',0) + m
     else:
       m = pack('L',1) + m
-    m = '\x00' + m;#flag
-    m = '\x01' + m;#arglength (arg is 1x4 bytes long)
+    m = '\x01' + m;#flag
+    m = '\x00' + m;#arglength (arg is 1x4 bytes long)
     m = '\x03' + m;#subcommand
     m = '\x04' + m;#main command
     m = '\xab\xcd' + m;#packet serial
@@ -707,7 +783,7 @@ parameter of the sign)
 
   @staticmethod
   def StopTest():
-    """
+    """ 
     This command is used to end the test on the LED sign. The format as the following
 table:
     """
