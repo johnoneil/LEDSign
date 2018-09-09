@@ -11,7 +11,7 @@ msg = Message.WriteText("Hello there. this is a new writefie implementation.")
 
 #print 'size of message is ' + str(len(msg))
 
-port = '/dev/ttyS0'
+#port = '/dev/ttyS0'
 port = '/dev/ttyUSB0'
 baudRate = 19200
 ser = serial.Serial(port, baudRate)

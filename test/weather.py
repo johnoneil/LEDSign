@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # vim: set ts=2 expandtab:
 
 #******************************************************************************
@@ -17,7 +17,7 @@
 #
 #******************************************************************************
 
-import pywapi
+#import pywapi
 import serial
 import time
 import datetime
@@ -28,21 +28,22 @@ displayMsg = Message.DisplayControlWithoutChecksum
 
 #fetch the weather forecast for a given zip code
 zipcode = '89129'
-weather = pywapi.get_weather_from_yahoo(zipcode)
+#weather = pywapi.get_weather_from_yahoo(zipcode)
+weather = "***clear***"
 
 import pprint
 pp = pprint.PrettyPrinter(indent=4)
 #pp.pprint(weather)
-
+"""
 def mps2mph(mps):
   return  mps * 2.23694
 def celsius2farenheight( celsius ):
   return celsius * 1.8 + 32
-condition  = weather['condition']['text'].encode('UTF-8')
-humidity = weather['atmosphere']['humidity'].encode('UTF-8')
-temp_celsius = float(weather['condition']['temp'])
+condition  = "clear" #weather['condition']['text'].encode('UTF-8')
+humidity = "76%" #weather['atmosphere']['humidity'].encode('UTF-8')
+temp_celsius = 10 #float(weather['condition']['temp'])
 temp = str( round(celsius2farenheight(temp_celsius),2)).encode('UTF-8')
-wind_mps = float( weather['wind']['speed'] )
+wind_mps = 10 #float( weather['wind']['speed'] )
 wind = str( round(mps2mph(wind_mps),2) ).encode('UTF-8')
 
 date_1 = weather['forecasts'][0]['date']
@@ -71,10 +72,13 @@ text = text + '{newframe}{fastest}{amber}{7x6}{movedownin}{moveupout}Forecast:{n
 text = text + '{green}' + time_2 + '{nl}'
 text = text + '{red}Low:' + forecast_temp_low_2 + ' High: ' +forecast_temp_high_2 + '{nl}'
 text = text + '{amber}' + forecast_text_2 + '{nl}'
+"""
+
+text = "***Clear***"
 
 msg = Message.WriteText(text,file_label='WEATHER.TXT')
 
-port = '/dev/ttyS0'
+port = '/dev/ttyUSB0'
 baudRate = 19200
 ser = serial.Serial(port, baudRate)
 x = ser.write(msg)

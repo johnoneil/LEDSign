@@ -32,12 +32,31 @@ print 'Uploading file ' + input_filename + ' as file ' + uploaded_filename
 #print "and data is  " + data.encode('hex')
 #print data
 
-msgs = Message.Picture(data,file_label=uploaded_filename)
+print("length of data is : " + str(len(data)))
+
+large_picture = True
+
+if large_picture:
+  msgs = Message.Picture(data,file_label=uploaded_filename)
+  msg = None
+else:
+  msgs = []
+  msg = Message.UploadSmallPicture(data,partition='E', msgId=1)
 
 port = '/dev/ttyUSB0'
 baudRate = 19200
+
 ser = serial.Serial(port, baudRate)
-for msg in msgs:
+
+for m in msgs:
+  x = ser.write(m)
+  time.sleep(1)
+
+if msg:
   x = ser.write(msg)
   time.sleep(1)
+  s = ser.read(len(msg))
+  print(s)
+
 ser.close()
+

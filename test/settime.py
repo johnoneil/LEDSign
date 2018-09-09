@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # vim: set ts=2 expandtab:
 
 import serial
@@ -9,7 +9,7 @@ msg = Message.SetSystemTime()
 
 print msg.encode('hex')
 
-port = '/dev/ttyS0'
+port = '/dev/ttyUSB0'
 baudRate = 19200
 ser = serial.Serial(port, baudRate)
 x = ser.write(msg)

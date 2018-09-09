@@ -1,8 +1,8 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # vim: set ts=2 expandtab:
 
 import serial
-from JetFileIIProtocol import Message
+from JetFileII import Message
 
 
 msg = Message.StartCountdown(day=10,hour=10,minute=10,second=10)
@@ -12,7 +12,7 @@ msg = Message.StartCountdown(day=10,hour=10,minute=10,second=10)
 
 #print 'size of message is ' + str(len(msg))
 
-port = '/dev/ttyS0'
+port = '/dev/ttyUSB0'
 baudRate = 19200
 ser = serial.Serial(port, baudRate)
 x = ser.write(msg)

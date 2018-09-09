@@ -407,7 +407,7 @@ class Message:
     m = pack('H', data_length) + m # 2 bytes packet size
     m = pack('L', data_length) + m # 4 bytes total file size    
     m = Message.FileLabel(file_label) + m
-    m = '\x01' + m; #flag
+    m = '\x01' + m; #flag x01 = 'in-echo' 0x00 = 'echo'
     m = '\x06' + m; #arglength (arg is 1x4 bytes long)
     m = '\x02' + m; #subcommand
     m = '\x02' + m; #main command
