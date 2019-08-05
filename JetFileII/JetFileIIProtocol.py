@@ -713,10 +713,8 @@ class Message:
     m = '\x09' + m;#subcommand
     m = '\x02' + m;#main command
     m = '\xab\xcd' + m;#packet serial
-    m = '\x00' + m;#source, dest addresses.
-    m = '\x00' + m;
-    m = '\x00' + m;
-    m = '\x00' + m;
+    m = '\x01\x01' + m;#dest addresses.
+    m = '\x00\x00' + m;#source address.
     m = pack('H',data_length) + m;
     m = Message.Checksum(m) + m;
     m = Message.SYN + m;
@@ -726,21 +724,18 @@ class Message:
   def TurnSignOff(goodbyeMsg=False):
     #build and return an emergency message with checksum backwards from data
     m = ''
-    data_length = 0
     if goodbyeMsg:
       m = pack('I',0) + m
     else:
       m = pack('I',1) + m
-    m = '\x01' + m;#flag
-    m = '\x00' + m;#arglength (arg is 1x4 bytes long)
-    m = '\x03' + m;#subcommand
-    m = '\x04' + m;#main command
-    m = '\xab\xcd' + m;#packet serial
-    m = '\x00' + m;#source, dest addresses.
-    m = '\x00' + m;
-    m = '\x00' + m;
-    m = '\x00' + m;
-    m = pack('H',data_length) + m;
+    m = '\x00' + m; # flag (0x0 = ECHO)
+    m = '\x01' + m; # arglength (fixed at 0x01)
+    m = '\x03' + m; # subcommand
+    m = '\x04' + m; # main command
+    m = '\xab\xcd' + m; # packet serial
+    m = '\x01\x01' + m; # dest addresses.
+    m = '\x00\x00' + m; # source address
+    m = pack('H',0) + m;
     m = Message.Checksum(m) + m;
     m = Message.SYN + m;
     return m
@@ -749,17 +744,14 @@ class Message:
   def TurnSignOn():
     #build and return an emergency message with checksum backwards from data
     m = ''
-    data_length = 0
-    m = '\x00' + m;#flag
-    m = '\x00' + m;#arglength (arg is 1x4 bytes long)
-    m = '\x04' + m;#subcommand
-    m = '\x04' + m;#main command
-    m = '\xab\xcd' + m;#packet serial
-    m = '\x00' + m;#source, dest addresses.
-    m = '\x00' + m;
-    m = '\x00' + m;
-    m = '\x00' + m;
-    m = pack('H',data_length) + m;
+    m = '\x00' + m; # flag 0x00 == ECHO
+    m = '\x00' + m; # arglength (arg is 1x4 bytes long)
+    m = '\x04' + m; # subcommand
+    m = '\x04' + m; # main command
+    m = '\xab\xcd' + m; # packet serial
+    m = '\x01\x01' + m; # dest addresses.
+    m = '\x00\x00' + m; # source address
+    m = pack('H',0) + m;
     m = Message.Checksum(m) + m;
     m = Message.SYN + m;
     return m
