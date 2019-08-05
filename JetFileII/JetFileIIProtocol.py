@@ -283,10 +283,34 @@ class Font:
       Wave = '\x1c\x36'
       Splash = '\x1c\x37'
 
-def TextFile(txt):
-  t = Format.InterpretMarkup(txt)
-  return '\x01Z00\x02AA' + t + '\x04'
-  
+class TextFile(object):
+  def __init__(self, txt, label, drive='D'):
+    t = Format.InterpretMarkup(txt)
+    self.data = '\x01Z00\x02AA' + t + '\x04'
+    self.type = 'T'
+    self.label = label
+    self.drive = drive
+
+# SEQUENT.SYS (playlist) format
+def SEQUENTSYS(files):
+  m = 'SQ'
+  m = m + '\x04' # type
+  m = m + '\x00' # valid
+  m = m + pack('H', len(files)) # num files in list
+  m = m + '\x00\x00' # reserved
+  for f in files:
+    m = m + f.drive # drive e.g. 'D' or 'E'
+    m = m + f.type # file type e.g. 'T' for text
+    m = m + '\x0f' # use bafile_name field below
+    m = m + '\x80' # week repetition, ignore
+    # begin time (currently always ignored)
+    m = m + Message.DateTimeStructure(year=2008,month=3,day=16,hour=0,minute=0)
+    # send time (currently always ignored)
+    m = m + Message.DateTimeStructure(year=2008,month=3,day=16,hour=0,minute=0)
+    m = m + Message.Checksum(f.data) # 2 bytes: checksum of file
+    m = m + pack('H', len(f.data)) # 2 bytes: file size
+    m = m + Message.FileLabel(f.label) # filename padded to 12 bytes
+  return m
 
 #See section 3.1 of protocol description
 class Message:
@@ -402,26 +426,25 @@ class Message:
     return m
 
   @staticmethod
-  def WriteSystemFile(file_contents, file_label='SEQUENT.SYS'):
+  def WriteSystemFile(file, file_label='SEQUENT.SYS'):
     #build and return an emergency message with checksum backwards from data
-    m = file_contents #Message.Create(message)
-    data_length = len(file_contents)
+    m = file
+    data_length = len(file)
     m = '\x00\x00' + m # 2 bytes: Note
     m = pack('H', 1) + m # current packet. from 0x01
     m = pack('H', 1) + m # number of packets
-    m = pack('H', data_length) + m # 2 bytes packet size
+    m = '\x00\x03' + m # packet size REALLY unsure of correct values here
     m = pack('I', data_length) + m # 4 bytes total file size    
     m = Message.FileLabel(file_label) + m
-    m = '\x01' + m; #flag x01 = 'in-echo' 0x00 = 'echo'
+    m = '\x00' + m; #flag x01 = 'in-echo' 0x00 = 'echo'
     m = '\x06' + m; #arglength (arg is 1x4 bytes long)
     m = '\x02' + m; #subcommand
     m = '\x02' + m; #main command
     m = '\xab\xcd' + m; # packet serial
+    m = '\x01\x01' + m; # dest address
     m = '\x00\x00' + m; # source address
-    m = '\x00\x00' + m; # dest address
     m = pack('H',data_length) + m;
     m = Message.Checksum(m) + m;
-    #m = Message.SYN + m;
     m = '\x55\xa7' + m;
     return m
 
@@ -470,17 +493,17 @@ class Message:
       return '\x0f' + self.disk + self.filetype + self.file_label
 
   @staticmethod
-  def WriteTextFilewithChecksum(text, longFilenme, drive='D'):
+  def WriteTextFilewithChecksum(file):
     #build and return an emergency message with checksum backwards from data
-    m = text
-    data_length = len(text)
+    m = file.data
+    data_length = len(file.data)
     m = '\x01\x00' + m
     m = '\x01\x00' + m
     m = '\x00\x03' + m # packet size REALLY unsure of correct values here
     m = pack('I', data_length) + m # file size (4 bytes)
-    m = Message.FileLabel(longFilenme) + m
+    m = Message.FileLabel(file.label) + m
     m = '\x01' + m # buzzer ???
-    m = drive + m
+    m = file.drive + m
     m = '\x00' + m # 0x00 == echo ON
     m = '\x06' + m #arglength (arg is 1x4 bytes long)
     m = '\x04' + m #subcommand
