@@ -295,7 +295,7 @@ class Message:
   Protocol = '\x06'
   BeginCommand = '\x02'
   WriteFile = 'A'
-  Coda = '\x03'
+  Coda = '\x04'
   SYN = '\x55\xa7'
   class DisplayControlWithoutChecksum:
     @staticmethod
@@ -362,7 +362,7 @@ class Message:
     #build and return an emergency message with checksum backwards from data
     m = Message.Create(message)
     data_length = len(m)
-    m = pack('L',data_length) +  pack('H',data_length) + pack('H',1) + pack('H',1) + m
+    m = pack('I',data_length) +  pack('H',data_length) + pack('H',1) + pack('H',1) + m
     m = disk_partition + pack('B',buzzer_time) + Message.FileLabel(file_label) + m
     m = '\x00' + m;#flag
     m = '\x06' + m;#arglength (arg is 1x4 bytes long)
@@ -410,7 +410,7 @@ class Message:
     m = pack('H', 1) + m # current packet. from 0x01
     m = pack('H', 1) + m # number of packets
     m = pack('H', data_length) + m # 2 bytes packet size
-    m = pack('L', data_length) + m # 4 bytes total file size    
+    m = pack('I', data_length) + m # 4 bytes total file size    
     m = Message.FileLabel(file_label) + m
     m = '\x01' + m; #flag x01 = 'in-echo' 0x00 = 'echo'
     m = '\x06' + m; #arglength (arg is 1x4 bytes long)
@@ -570,7 +570,7 @@ class Message:
       m = m + Message.Checksum(file.data)
       m = m + pack('H',len(file.data))
       m = m + file.longFileName
-      #m = m + pack('L', file.checksum) # checksum of file (UWORD)
+      #m = m + pack('I', file.checksum) # checksum of file (UWORD)
     return m
 
   @staticmethod
@@ -583,7 +583,7 @@ class Message:
     for imsg in range(num_messages):
       m = data[imsg*payload_size:imsg*payload_size+payload_size] #Message.Create(message)
       data_length = len(m)
-      m = partition + pack('B',0) +  Message.FileLabel(file_label) + pack('L',data_size) + pack('H',payload_size) + pack('H',num_messages) + pack('H',imsg+1) + m
+      m = partition + pack('B',0) +  Message.FileLabel(file_label) + pack('I',data_size) + pack('H',payload_size) + pack('H',num_messages) + pack('H',imsg+1) + m
       m = '\x00' + m;#flag
       m = '\x06' + m;#arglength (arg is 1x4 bytes long)
       m = '\x05' + m;#subcommand
@@ -634,8 +634,8 @@ class Message:
     m = m + pack('H', height)
     m = m + pack('H', 2) # bits per point.
     m = m + pack('H', numFrames)
-    m = m + pack('L', len(data))
-    m = m + pack('L', len(data)/numFrames)
+    m = m + pack('I', len(data))
+    m = m + pack('I', len(data)/numFrames)
     m = m + pack('H', width) # last data width
     m = m + '\x00\x00' # reserved
     return m
@@ -674,7 +674,7 @@ class Message:
       m = pack('H', imsg+1) + m # current packet, starting at 1 (2 bytes)
       m = pack('H',num_messages) + m # number of packets total (2 bytes)
       m = pack('H',payload_size) + m # size of  ll packets (2 bytes) all should be the same size
-      m = pack('L',data_size) + m # total file size (2 bytes)
+      m = pack('I',data_size) + m # total file size (2 bytes)
       m = Message.FileLabel(file_label) + m # file label (12 bytes, padded with \x00 if necessary)
       m = '\x00' + m # reserved, must be 'x00 (one byte)
       m = partition + m # partition (one byte)
@@ -705,7 +705,7 @@ class Message:
   @staticmethod
   def EmergencyMessage(msg,t=10):
     #build and return an emergency message with checksum backwards from data
-    m = Message.Create(msg);
+    m = TextFile(msg);
     data_length = len(m)
     m = pack('H',1) + '\x00' + '\x00' + m;#time, sound, reserved
     m = '\x01' + m;#flag
@@ -728,9 +728,9 @@ class Message:
     m = ''
     data_length = 0
     if goodbyeMsg:
-      m = pack('L',0) + m
+      m = pack('I',0) + m
     else:
-      m = pack('L',1) + m
+      m = pack('I',1) + m
     m = '\x01' + m;#flag
     m = '\x00' + m;#arglength (arg is 1x4 bytes long)
     m = '\x03' + m;#subcommand
