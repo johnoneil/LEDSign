@@ -14,55 +14,41 @@
 
 import serial
 from JetFileII import Message
+from JetFileII import TextFile
 displayMsg = Message.DisplayControlWithoutChecksum
 import time
 
-use_version_2 = True
-write_text_files = False
+write_text_files = True
+write_playlist = False
 
 files = []
 
-if True: #write_text_files:
-  files.append(Message.TextFile('{pause=5}{middle}{moveRightIn}{moveLeftOut}{b16x12}{green}{hhmin_12hr}{nl}{amber}{7x6}{dow_abbr}, {month_abbr} {date} {yyyy}', msgId=1))
-  files.append(Message.TextFile('{pause=1}{green}{5x5}{moveLeftIn}{moveRightOut}xxxPLAYLIST TWO', msgId=2))
-  files.append(Message.TextFile('{pause=1}{red}{5x5}{moverightin}{moveRightOut}*\x06\x14_A', msgId=3))
-  files.append(Message.TextFile('{pause=1}{amber}{5x5}{moverightin}{moveRightOut}**\x18\x02@A', msgId=4))
+if write_text_files:
+  #files.append(Message.WriteTextFilewithChecksum( TextFile('MYTESTINGXX1'), "AB.nmg", drive='D'))
+  #files.append(Message.WriteTextFilewithChecksum( TextFile('MY OTHER TESTING XX2'), "lngname.nmg", drive='D'))
+  files.append(Message.WriteTextFilewithChecksum( TextFile('{pause=5}{middle}{moveRightIn}{moveLeftOut}{b16x12}{green}{hhmin_12hr}{nl}{amber}{7x6}{dow_abbr}, {month_abbr} {date} {yyyy}'), "AB.nmg", drive='D'))
+  #files.append(Message.TextFile('{pause=1}{green}{5x5}{moveLeftIn}{moveRightOut}xxxPLAYLIST TWO', msgId=2))
+  #files.append(Message.TextFile('{pause=1}{red}{5x5}{moverightin}{moveRightOut}*\x06\x14_A', msgId=3))
+  #files.append(Message.TextFile('{pause=1}{amber}{5x5}{moverightin}{moveRightOut}**\x18\x02@A', msgId=4))
   #files.append(Message.SmallPictureFile(None, msgId=1, disk='E', upload=False))
   #files.append(Message.SmallPictureFile(None, msgId=2, disk='D', upload=False))
 
-#file1 = Message.WriteTextFilewithChecksum("hello", "hello.txt")
 
-playlist = None
-
-if use_version_2:
-  playlist = Message.WriteSystemFile(Message.PlaylistFileFormat(files))
-else:
-  playlist = Message.Playlist(files)
-  
-  #18H + [Length] + 0x0B + [Drive] + [File label]
-
-port = '/dev/ttyUSB0'
+#port = '/dev/ttyUSB0'
+#port = '/dev/ttyACM0'
+port = '/dev/ttyVIRTUAL'
 baudRate = 19200
 ser = serial.Serial(port, baudRate)
 
 if write_text_files:
   for f in files:
-    #print msg.data.encode("hex")
-    if f.upload:
-      x = ser.write(f.data)
-      time.sleep(1)
+    print("Sending text file...")
+    ser.write(f)
+    time.sleep(1)
 
-print("*************playlist*************")
-print(playlist)
-p = ":".join("{:02x}".format(ord(c)) for c in playlist)
-print(p)
-x = ser.write(playlist)
-
-s = ser.read(len(playlist))
-print("************response**********")
-print(s)
-h = ":".join("{:02x}".format(ord(c)) for c in s)
-print(h)
+if write_playlist:
+  playlist = Message.WriteSystemFile(Message.PlaylistFileFormat(files))
+  print("*************writing playlist*************")
+  ser.write(playlist)
 
 ser.close()
-
