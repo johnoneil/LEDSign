@@ -283,6 +283,11 @@ class Font:
       Wave = '\x1c\x36'
       Splash = '\x1c\x37'
 
+def TextFile(txt):
+  t = Format.InterpretMarkup(txt)
+  return '\x01Z00\x02AA' + t + '\x04'
+  
+
 #See section 3.1 of protocol description
 class Message:
   Header = '\x00\x00\x00\x00\x00\x01Z00'
