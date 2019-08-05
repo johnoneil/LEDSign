@@ -448,7 +448,7 @@ class Message:
     return m
 
   class TextFile:
-    def __init__(self, data, msgId,disk='E', upload=True):
+    def __init__(self, data, msgId, disk='E', upload=True):
       #self.file_label=Message.FileLabel(file_label)
       #print "File label: " + self.file_label + " "+ self.file_label.encode('hex')
       #self.data=Message.WriteText(data,file_label=file_label,disk_partition=partition)
@@ -465,28 +465,27 @@ class Message:
       return '\x0f' + self.disk + self.filetype + self.file_label
 
   @staticmethod
-  def WriteTextFilewithChecksum(text, longFilenme, drive='E'):
+  def WriteTextFilewithChecksum(text, longFilenme, drive='D'):
     #build and return an emergency message with checksum backwards from data
     m = text
     data_length = len(text)
-    m = pack('H', 1) + m # current packet
-    m = pack('H', 1) + m # number of packets
-    m = pack('H', data_length) + m # packet size
-    m = pack('L', data_length) + m# file size (4 bytes)
+    m = '\x01\x00' + m
+    m = '\x01\x00' + m
+    m = '\x00\x03' + m # packet size REALLY unsure of correct values here
+    m = pack('I', data_length) + m # file size (4 bytes)
     m = Message.FileLabel(longFilenme) + m
-    m = '\x00' + m # no buzzer sound
+    m = '\x01' + m # buzzer ???
     m = drive + m
-
-    m = '\x00' + m #flag
-    m = '\x01' + m #arglength (arg is 1x4 bytes long)
-    m = '\x03' + m #subcommand
-    m = '\x04' + m #main command
-    m = '\xab\xcd' + m #packet serial
-    m = '\x00' + m #source, dest addresses.
+    m = '\x00' + m # 0x00 == echo ON
+    m = '\x06' + m #arglength (arg is 1x4 bytes long)
+    m = '\x04' + m #subcommand
+    m = '\x02' + m #main command
+    m = '\x4c\x00' + m #packet serial (just echoed in response)
+    m = '\x01' + m
+    m = '\x01' + m # dest address 1, 2 (0x01, 0x01)
     m = '\x00' + m
-    m = '\x00' + m
-    m = '\x00' + m
-    m = pack('H',data_length) + m
+    m = '\x00' + m # source address 1, 2 (0,0)
+    m = pack('H', data_length) + m
     m = Message.Checksum(m) + m
     m = Message.SYN + m
     return m
@@ -549,7 +548,7 @@ class Message:
     m = m + '\x02' # strt symbol of command
     m = m + 'E' # command code
     m = m + '.SL'
-        for file in files:
+    for file in files:
       m = m + file.path() #'\x0fETAB'
     m = m + '\x03' # 0x04 = in-echo, 0x03 = echo
     return m
