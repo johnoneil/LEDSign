@@ -298,7 +298,7 @@ class Message:
       p = Message.DisplayControlWithoutChecksum
       f = Format
       m = Message
-      return m.Header + m.BeginCommand + m.WriteFile + m.MsgId2DiskFolderFilename(msgId) + m.Protocol + f.InterpretMarkup(text) + m.Coda
+      return m.Header + m.BeginCommand + m.WriteFile + m.MsgId2DiskFolderFilename(msgId,disk=disk,folder=folder) + m.Protocol + f.InterpretMarkup(text) + m.Coda
   @staticmethod
   def MsgId2Filename(msgId, fileType='T'):
     """
@@ -549,7 +549,7 @@ class Message:
     m = m + '\x02' # strt symbol of command
     m = m + 'E' # command code
     m = m + '.SL'
-    for file in files:
+        for file in files:
       m = m + file.path() #'\x0fETAB'
     m = m + '\x03' # 0x04 = in-echo, 0x03 = echo
     return m
