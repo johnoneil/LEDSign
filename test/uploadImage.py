@@ -18,9 +18,9 @@ from JetFileII import SEQUENTSYS
 displayMsg = Message.DisplayControlWithoutChecksum
 import time
 
-#pic = PictureFile('../images/awesome.bmp', 'xd.bmp', 'D')
+pic = PictureFile('../images/awesome.bmp', 'xd.bmp', 'D')
 #pic = PictureFile('../images/g.bmp', 'newg1.bmp', 'D')
-pic = PictureFile('../images/mario.bmp', 'mario.bmp', 'D')
+#pic = PictureFile('../images/mario.bmp', 'mario.bmp', 'D')
 
 #port = '/dev/ttyUSB0'
 #port = '/dev/ttyACM0'
@@ -28,6 +28,9 @@ port = '/dev/ttyVIRTUAL'
 baudRate = 19200
 
 ser = serial.Serial(port, baudRate)
+
+#debug incorrect checksum
+#ser.write(Message.WritePictureFileWithChecksum(pic, packetNumber=0))
 
 for packetNumber in range(0, pic.numPackets):
   print("Writing image packet " + str(packetNumber))

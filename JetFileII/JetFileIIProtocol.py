@@ -368,12 +368,11 @@ class Message:
   @staticmethod
   def Checksum(message):
     sum = 0
-    for c in message:
-      sum = sum + ord(c)
-    #print "checksum calculated is " + str(sum)
     USHRT_MAX = 65535
-    packed =  pack('H',sum % USHRT_MAX)
-    #print packed
+    for c in message:
+      sum = (sum + ord(c)) & 0xffff
+    sum = sum % USHRT_MAX
+    packed =  pack('H',sum)
     return packed
 
   @staticmethod
@@ -536,7 +535,7 @@ class Message:
     m = packet
     total_file_size = len(file.data)
     packet_size = len(packet)
-    print("the size of packet " + str(packetNumber) + " is: " + str(packet_size));
+    #print("the size of packet " + str(packetNumber) + " is: " + str(packet_size));
     m = pack('H', packetNumber + 1) + m # current packet(one based)
     m = pack('H', file.numPackets) + m # number of total packets
     m = '\x00\x03' + m # maximum packet size (768 bytes == 0x0300)
