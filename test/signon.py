@@ -4,14 +4,11 @@
 import serial
 from JetFileII import Message
 
-
 msg = Message.TurnSignOn()
 
-#print msg.encode("hex")
-
-#print 'size of message is ' + str(len(msg))
-
-port = '/dev/ttyUSB0'
+#port = '/dev/ttyUSB0'
+port = '/dev/ttyACM0'
+#port = '/dev/ttyVIRTUAL'
 baudRate = 19200
 ser = serial.Serial(port, baudRate)
 x = ser.write(msg)
