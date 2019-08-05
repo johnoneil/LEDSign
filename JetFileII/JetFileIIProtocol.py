@@ -291,6 +291,16 @@ class TextFile(object):
     self.label = label
     self.drive = drive
 
+class PictureFile(object):
+  def __init__(self, file, label, drive='D'):
+    with open(file, mode='rb') as file:
+      self.data = file.read()
+    self.label = label
+    self.type = 'P'
+    self.drive = drive
+    # limit to max packet size of 768 bytes (though true limit should be 1024)
+    self.numPackets = int(len(self.data) / 768) + 1
+
 # SEQUENT.SYS (playlist) format
 def SEQUENTSYS(files):
   m = 'SQ'
@@ -519,6 +529,34 @@ class Message:
     return m
 
   @staticmethod
+  def WritePictureFileWithChecksum(file, packetNumber=0):
+    maxPacketSize = 768
+    start = packetNumber * maxPacketSize
+    packet = file.data[start:start+maxPacketSize]
+    m = packet
+    total_file_size = len(file.data)
+    packet_size = len(packet)
+    print("the size of packet " + str(packetNumber) + " is: " + str(packet_size));
+    m = pack('H', packetNumber + 1) + m # current packet(one based)
+    m = pack('H', file.numPackets) + m # number of total packets
+    m = '\x00\x03' + m # maximum packet size (768 bytes == 0x0300)
+    m = pack('I', total_file_size) + m # file size (4 bytes)
+    m = Message.FileLabel(file.label) + m
+    m = '\x01' + m # reserved (docs say 0 but practice says 1)
+    m = file.drive + m
+    m = '\x00' + m # 0x00 == echo ON
+    m = '\x06' + m # arglength (arg is 1x4 bytes long)
+    m = '\x06' + m # subcommand
+    m = '\x02' + m # main command
+    m = '\xab\xcd' + m #packet serial (just echoed in response)
+    m = '\x01\x01' + m # dest address
+    m = '\x00\x00' + m # source address
+    m = pack('H', packet_size) + m
+    m = Message.Checksum(m) + m
+    m = Message.SYN + m
+    return m
+
+  @staticmethod
   def ListFilesInFolder(drive='E', folder='T'):
     #build and return an emergency message with checksum backwards from data
     m = '' # no data
@@ -542,26 +580,6 @@ class Message:
     m = Message.SYN + m;
     return m
 
-  
-
-  class SmallPictureFile:
-    def __init__(self, data, msgId,disk='E', upload=True):
-      #self.file_label=Message.FileLabel(file_label)
-      #print "File label: " + self.file_label + " "+ self.file_label.encode('hex')
-      #self.data=Message.WriteText(data,file_label=file_label,disk_partition=partition)
-      if data:
-        self.data = Message.UploadSmallPicture(data, partition=disk,msgId=msgId)
-        self.upload = upload
-      else:
-        self.data = None
-        self.upload = False
-      self.file_label = Message.MsgId2Filename(msgId)
-      self.fullpath = Message.MsgId2DiskFolderFilename(msgId, disk=disk, folder='P')
-      self.filetype='P'
-      self.disk = disk
-
-    def path(self):
-      return self.fullpath
 
   @staticmethod
   def Playlist(files):
