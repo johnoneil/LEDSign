@@ -17,10 +17,30 @@ import time
 import requests 
 import json
 import feedparser
+from weather import Weather, Unit
 
 def generateTimeScreen():
-  return TextFile('{pause=5}{middle}{nonein}{noneout}{b16x12}{green}{hhmin_12hr}{nl}{amber}{7x6}{dow_abbr}, {month_abbr} {date} {yyyy}', "AB.nmg", drive='D')
+  return TextFile('{pause=6}{middle}{nonein}{noneout}{b16x12}{green}{hhmin_12hr}{nl}{amber}{7x6}{dow_abbr}, {month_abbr} {date} {yyyy}', "AB.nmg", drive='D')
 
+
+def generateWeatherFeed():
+  # r1 = requests.get('https://api.weather.gov/points/36.1211,-115.3508')
+  # json1 = r1.json()
+  # location = json1['properties']['relativeLocation']['properties']
+  # city = location['city']
+  # state = location['state']
+  # print("weather for " + city + ", " + state)
+  # don't know if the following url is static, but we can find it via the code above
+  r2 = requests.get('https://api.weather.gov/gridpoints/VEF/114,96/forecast')
+  json2 = r2.json()
+  f1 = json2['properties']['periods'][0]
+  f1s = '{s1}{green}{time}: {amber}{red}{temp}{nl}{amber}{forecast}'.format(s1='{7x6}',green='{green}', red='{red}', time=f1["name"], amber='{amber}', temp=f1["temperature"], nl="{nl}", forecast=f1["shortForecast"])
+  f2 = json2['properties']['periods'][1]
+  f2s = '{s1}{green}{time}: {amber}{red}{temp}{nl}{amber}{forecast}'.format(s1='{7x6}',green='{green}', red='{red}', time=f2["name"], amber='{amber}', temp=f2["temperature"], nl="{nl}", forecast=f2["shortForecast"])
+  #f3 = json2['properties']['periods'][2]
+  #f3s = '{s1}{green}{time}: {amber}{red}{temp}{nl}{amber}{forecast}'.format(s1='{7x6}',green='{green}', red='{red}', time=f3["name"], amber='{amber}', temp=f3["temperature"], nl="{nl}", forecast=f3["shortForecast"])
+  #print("Forecast: " + f1["name"] + " temp: " + str(one["temperature"]) + " forecast: " + one["shortForecast"])
+  return TextFile('{pause=2}{randomin}{randomout}{fastest}%s{newframe}%s' % ( f1s, f2s ), "AW.nmg", drive='D')
 
 def generateBTCScreen():
   r = requests.get('https://api.coinmarketcap.com/v2/ticker/1/')
@@ -43,23 +63,24 @@ def generateDrudgeFeed():
   #print("drudge feed:")
   #print(d)
   try:
-    h1 = d['entries'][0]['title'].decode("utf-8").encode("ascii","ignore")
+    h1 = d['entries'][0]['title'].decode("utf-8").encode("ascii","ignore").strip()
   except Exception as exception:
     h1 = "Headline 1 Error"
   try:
-    h2 = d['entries'][1]['title'].decode("utf-8").encode("ascii","ignore")
+    h2 = d['entries'][1]['title'].decode("utf-8").encode("ascii","ignore").strip()
   except Exception as exception:
     h2 = "Headline 2 Error"
   try:
-    h3 = d['entries'][2]['title'].decode("utf-8").encode("ascii","ignore")
+    h3 = d['entries'][2]['title'].decode("utf-8").encode("ascii","ignore").strip()
   except Exception as exception:
     h3 = "Headline 3 Error"
-  return TextFile('{pause=1}{middle}{moveLeftIn}{moveLeftOut}{7x6}{red}DRUDGE REPORT:{newframe}{amber}{7x6}%s %s %s' % (h1, h2, h3), "AD.nmg", drive='D')
+  return TextFile('{pause=0}{middle}{moveLeftIn}{moveLeftOut}{b16x12}{red}{typesetoff}DRUDGE REPORT: {amber}{7x6}%s %s %s' % (h1, h2, h3), "AD.nmg", drive='D')
 
 files = []
 if True:
   files.append(generateTimeScreen())
   #files.append(PictureFile('../images/awesome.bmp', 'sugoi.bmp', 'D'))
+  files.append(generateWeatherFeed())
   files.append(generateBTCScreen())
   files.append(generateDrudgeFeed())
   #files.append(TextFile('{middle}{left}{green}{b16x12}$10,600', 'AC.nmg', drive='D'))

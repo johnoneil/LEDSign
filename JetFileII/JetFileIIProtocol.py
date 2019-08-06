@@ -942,6 +942,8 @@ class Markup:
     'fastest' : Animate.Speed.Fastest,
     'nonein' : Animate.Jump.In,
     'noneout' : Animate.Jump.Out,
+    'randomin' : Animate.Random.In,
+    'randomout' : Animate.Random.Out,
     'moveleftin' : Animate.MoveLeft.In,
     'moveleftout' : Animate.MoveLeft.Out,
     'moverightin' : Animate.MoveRight.In,
