@@ -16,9 +16,10 @@ import time
 
 import requests 
 import json
+import feedparser
 
 def generateTimeScreen():
-  return TextFile('{pause=5}{middle}{moveRightIn}{moveRightOut}{b16x12}{green}{hhmin_12hr}{nl}{amber}{7x6}{dow_abbr}, {month_abbr} {date} {yyyy}', "AB.nmg", drive='D')
+  return TextFile('{pause=5}{middle}{nonein}{noneout}{b16x12}{green}{hhmin_12hr}{nl}{amber}{7x6}{dow_abbr}, {month_abbr} {date} {yyyy}', "AB.nmg", drive='D')
 
 
 def generateBTCScreen():
@@ -37,12 +38,30 @@ def generateBTCScreen():
   change7d = '{color}{value:+.1f}'.format(color=color7d, value=percent_change_7d)
   return TextFile('{wipeupwardin}{wipeupwardout}\x14DD{middle}%s{b16x12}{halfspace}$%s{nl}{7x6}{amber}BTC %sd %sw' % ( color24, '{:,d}'.format(btcprice), change24, change7d ), 'AC.nmg', drive='D')
 
+def generateDrudgeFeed():
+  d = feedparser.parse('http://drudgereportfeed.com/rss.xml')
+  #print("drudge feed:")
+  #print(d)
+  try:
+    h1 = d['entries'][0]['title'].decode("utf-8").encode("ascii","ignore")
+  except Exception as exception:
+    h1 = "Headline 1 Error"
+  try:
+    h2 = d['entries'][1]['title'].decode("utf-8").encode("ascii","ignore")
+  except Exception as exception:
+    h2 = "Headline 2 Error"
+  try:
+    h3 = d['entries'][2]['title'].decode("utf-8").encode("ascii","ignore")
+  except Exception as exception:
+    h3 = "Headline 3 Error"
+  return TextFile('{pause=1}{middle}{moveLeftIn}{moveLeftOut}{7x6}{red}DRUDGE REPORT:{newframe}{amber}{7x6}%s %s %s' % (h1, h2, h3), "AD.nmg", drive='D')
 
 files = []
 if True:
   files.append(generateTimeScreen())
   #files.append(PictureFile('../images/awesome.bmp', 'sugoi.bmp', 'D'))
   files.append(generateBTCScreen())
+  files.append(generateDrudgeFeed())
   #files.append(TextFile('{middle}{left}{green}{b16x12}$10,600', 'AC.nmg', drive='D'))
 
 
