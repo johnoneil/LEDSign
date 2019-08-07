@@ -17,7 +17,7 @@ from JetFileII import SEQUENTSYS
 displayMsg = Message.DisplayControlWithoutChecksum
 import time
 
-test = '{pause=3}{middle}{moveRightIn}{moveRightOut}{amber}FONT TEST{newframe}'
+test = '{pause=3}{middle}{moveRightIn}{moveRightOut}{amber}{font3}FONT TEST{newframe}'
 test += '{5x5}5x5{newframe}'
 test += '{7x6}7x6{newframe}'
 test += '{14x8}14x8{newframe}'
@@ -31,6 +31,7 @@ test += '{30x18}30x18{newframe}'
 test += '{b14x10}b14x10{newframe}'
 test += '{b15x10}b15x10{newframe}'
 test += '{b16x12}b16x12{newframe}'
+test += '{font3}Western12{newframe}'
 
 files = []
 if True:
