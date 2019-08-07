@@ -74,7 +74,7 @@ def generateDrudgeFeed():
     h3 = d['entries'][2]['title'].decode("utf-8").encode("ascii","ignore").strip()
   except Exception as exception:
     h3 = "Headline 3 Error"
-  return TextFile('{pause=0}{middle}{moveLeftIn}{moveLeftOut}{b16x12}{red}{typesetoff}DRUDGE REPORT: {amber}{7x6}%s %s %s' % (h1, h2, h3), "AD.nmg", drive='D')
+  return TextFile('{pause=0}{middle}{moveLeftIn}{moveLeftOut}{font3}{green}{typesetoff}DRUDGE REPORT: {amber}{7x6}%s %s %s' % (h1, h2, h3), "AD.nmg", drive='D')
 
 files = []
 if True:
