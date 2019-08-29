@@ -14,7 +14,7 @@ from JetFileII import SEQUENTSYS
 displayMsg = Message.DisplayControlWithoutChecksum
 import time
 
-import requests 
+import requests
 import json
 import feedparser
 from weather import Weather, Unit
@@ -87,10 +87,17 @@ if True:
 
 
 #port = '/dev/ttyUSB0'
-#port = '/dev/ttyACM0'
-port = '/dev/ttyVIRTUAL'
+port = '/dev/ttyACM0'
+#port = '/dev/ttyVIRTUAL'
 baudRate = 19200
 ser = serial.Serial(port, baudRate)
+
+# Had some issues updating sign directly from /dev/ttyACM0
+# This appears to fix it and allow me to remove sleep() calls
+def getResponse(ser):
+  resp = ser.read()
+  ser.flushInput()
+  ser.flushOutput()
 
 
 # # upload an image used in a text file (inline, so label is ONE character)
@@ -98,19 +105,22 @@ ser = serial.Serial(port, baudRate)
 # for packetNumber in range(0,coinpic.numPackets):
 #   print("Writing image " + coinpic.label + " do drive: " + coinpic.drive + " packet number: " + str(packetNumber))
 #   ser.write(Message.WritePictureFileWithChecksum(coinpic, packetNumber=packetNumber))
-#   time.sleep(1)
+#   getResponse()
 
 if True:
   for f in files:
     print("Writing file..." + f.label + " to drive: " + f.drive)
     if f.type == 'T':
       ser.write(Message.WriteTextFilewithChecksum(f))
+      getResponse(ser)
     elif f.type == 'P':
       for packetNumber in range(0,f.numPackets):
         print("Writing image " + f.label + " do drive: " + f.drive + " packet number: " + str(packetNumber))
         ser.write(Message.WritePictureFileWithChecksum(f, packetNumber=packetNumber))
-        time.sleep(1)
-    time.sleep(1)
+        getResponse(ser)
+
+# This appears necessary when I use /dev/ttyACM0 directly
+
 
 if True:
   # the actual playlist is a SEQUENT.SYS
@@ -119,6 +129,7 @@ if True:
   playlist = Message.WriteSystemFile(ss)
   print("Writing playlist...")
   ser.write(playlist)
+  getResponse(ser)
 
 print("Script complete.")
 
