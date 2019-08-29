@@ -59,23 +59,36 @@ def generateBTCScreen():
   return TextFile('{wipeupwardin}{wipeupwardout}\x14DD{middle}%s{b16x12}{halfspace}$%s{nl}{7x6}{amber}BTC %sd %sw' % ( color24, '{:,d}'.format(btcprice), change24, change7d ), 'AC.nmg', drive='D')
 
 def generateDrudgeFeed():
+  maxTries = 4
+  numTries = 0
   d = feedparser.parse('http://drudgereportfeed.com/rss.xml')
   #print("drudge feed:")
   #print(d)
-  try:
-    h1 = d['entries'][0]['title'].decode("utf-8").encode("ascii","ignore").strip()
-  except Exception as exception:
-    h1 = "Headline 1 Error"
-  try:
-    h2 = d['entries'][1]['title'].decode("utf-8").encode("ascii","ignore").strip()
-  except Exception as exception:
-    h2 = "Headline 2 Error"
-  try:
-    h3 = d['entries'][2]['title'].decode("utf-8").encode("ascii","ignore").strip()
-  except Exception as exception:
-    h3 = "Headline 3 Error"
-  return TextFile('{pause=0}{middle}{moveLeftIn}{moveLeftOut}{font3}{green}{typesetoff}DRUDGE REPORT: {amber}{7x6}%s %s %s' % (h1, h2, h3), "AD.nmg", drive='D')
-
+  while True:
+    error = False
+    try:
+      h1 = d['entries'][0]['title'].decode("utf-8").encode("ascii","ignore").strip()
+    except Exception as exception:
+      error = True
+      h1 = "Headline 1 Error"
+    try:
+      h2 = d['entries'][1]['title'].decode("utf-8").encode("ascii","ignore").strip()
+    except Exception as exception:
+      error = True
+      h2 = "Headline 2 Error"
+    try:
+      h3 = d['entries'][2]['title'].decode("utf-8").encode("ascii","ignore").strip()
+    except Exception as exception:
+      h3 = "Headline 3 Error"
+      error = True
+    out = TextFile('{pause=0}{middle}{moveLeftIn}{moveLeftOut}{font3}{green}{typesetoff}DRUDGE REPORT: {amber}{7x6}%s %s %s' % (h1, h2, h3), "AD.nmg", drive='D')
+    if not error:
+      return out
+    else:
+      numTries = numTries + 1
+      if numTries >= maxTries:
+        return out
+      
 files = []
 if True:
   files.append(generateTimeScreen())
@@ -83,7 +96,6 @@ if True:
   files.append(generateWeatherFeed())
   files.append(generateBTCScreen())
   files.append(generateDrudgeFeed())
-  #files.append(TextFile('{middle}{left}{green}{b16x12}$10,600', 'AC.nmg', drive='D'))
 
 
 #port = '/dev/ttyUSB0'
