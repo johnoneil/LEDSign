@@ -61,11 +61,10 @@ def generateBTCScreen():
 def generateDrudgeFeed():
   maxTries = 4
   numTries = 0
-  d = feedparser.parse('http://drudgereportfeed.com/rss.xml')
-  #print("drudge feed:")
-  #print(d)
+
   while True:
     error = False
+    d = feedparser.parse('http://drudgereportfeed.com/rss.xml')
     try:
       h1 = d['entries'][0]['title'].decode("utf-8").encode("ascii","ignore").strip()
     except Exception as exception:
@@ -86,6 +85,7 @@ def generateDrudgeFeed():
       return out
     else:
       numTries = numTries + 1
+      print("ERROR on drudge feed. tries = " + str(numTries))
       if numTries >= maxTries:
         return out
       
