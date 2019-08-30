@@ -34,9 +34,9 @@ def generateWeatherFeed():
   r2 = requests.get('https://api.weather.gov/gridpoints/VEF/114,96/forecast')
   json2 = r2.json()
   f1 = json2['properties']['periods'][0]
-  f1s = '{s1}{green}{time}: {amber}{red}{temp}{nl}{amber}{forecast}'.format(s1='{7x6}',green='{green}', red='{red}', time=f1["name"], amber='{amber}', temp=f1["temperature"], nl="{nl}", forecast=f1["shortForecast"])
+  f1s = '{font3}{green}Weather:{nl}{s1}{green}{time} {amber}{red}{temp}{nl}{amber}{forecast}'.format(font3='{font3}', s1='{7x6}',green='{green}', red='{red}', time=f1["name"], amber='{amber}', temp=f1["temperature"], nl="{nl}", forecast=f1["shortForecast"])
   f2 = json2['properties']['periods'][1]
-  f2s = '{s1}{green}{time}: {amber}{red}{temp}{nl}{amber}{forecast}'.format(s1='{7x6}',green='{green}', red='{red}', time=f2["name"], amber='{amber}', temp=f2["temperature"], nl="{nl}", forecast=f2["shortForecast"])
+  f2s = '{font3}{amber}Weather:{nl}{s1}{green}{time} {amber}{red}{temp}{nl}{amber}{forecast}'.format(font3='{font3}', s1='{7x6}',green='{green}', red='{red}', time=f2["name"], amber='{amber}', temp=f2["temperature"], nl="{nl}", forecast=f2["shortForecast"])
   #f3 = json2['properties']['periods'][2]
   #f3s = '{s1}{green}{time}: {amber}{red}{temp}{nl}{amber}{forecast}'.format(s1='{7x6}',green='{green}', red='{red}', time=f3["name"], amber='{amber}', temp=f3["temperature"], nl="{nl}", forecast=f3["shortForecast"])
   #print("Forecast: " + f1["name"] + " temp: " + str(one["temperature"]) + " forecast: " + one["shortForecast"])
@@ -92,7 +92,7 @@ def generateDrudgeFeed():
 files = []
 if True:
   files.append(generateTimeScreen())
-  #files.append(PictureFile('../images/awesome.bmp', 'sugoi.bmp', 'D'))
+  #files.append(PictureFile('../images/awesome.bmp', 'sugoi.bmp', 'E'))
   files.append(generateWeatherFeed())
   files.append(generateBTCScreen())
   files.append(generateDrudgeFeed())
