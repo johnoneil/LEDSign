@@ -13,8 +13,14 @@ port = '/dev/ttyACM0'
 #port = '/dev/ttyVIRTUAL'
 #baudRate = 9600 #19200
 baudRate = 19200
+
 ser = serial.Serial(port, baudRate)
 x = ser.write(msg)
+
+resp = ser.read()
+ser.flushInput()
+ser.flushOutput()
+
 ser.close()
 
 

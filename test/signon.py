@@ -12,4 +12,9 @@ port = '/dev/ttyACM0'
 baudRate = 19200
 ser = serial.Serial(port, baudRate)
 x = ser.write(msg)
+
+resp = ser.read()
+ser.flushInput()
+ser.flushOutput()
+
 ser.close()
