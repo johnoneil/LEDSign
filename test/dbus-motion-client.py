@@ -76,7 +76,6 @@ if __name__ == '__main__':
     # Tell the remote object to emit the signal after a short delay
     gobject.timeout_add(2000, emit_signal)
 
-    #loop = gobject.MainLoop()
     # Initialize a main loop
     DBusGMainLoop(set_as_default=True)
     loop = GLib.MainLoop()

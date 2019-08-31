@@ -43,7 +43,6 @@ if __name__ == '__main__':
     name = dbus.service.BusName(DBUS_INTERFACE_NAME, session_bus)
     object = MotionDetectObject(session_bus)
 
-    #loop = gobject.MainLoop()
     # Initialize a main loop
     DBusGMainLoop(set_as_default=True)
     loop = GLib.MainLoop()
