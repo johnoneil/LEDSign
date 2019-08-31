@@ -1,4 +1,11 @@
-from inspect import signature
+
+try:
+    # python 3+
+    from inspect import signature
+except ImportError:
+    # python 2.7
+    from funcsigs import signature
+
 from functools import wraps
 
 def typeassert(*ty_args, **ty_kwargs):
