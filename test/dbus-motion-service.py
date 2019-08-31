@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 import dbus, dbus.service, dbus.exceptions
 import sys
