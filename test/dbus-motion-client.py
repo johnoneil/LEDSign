@@ -14,6 +14,7 @@ python example-signal-recipient.py --exit-service
 """
 
 DBUS_INTERFACE_NAME = 'com.example.TestService'
+DBUS_OBJECT_PATH = '/com/example/TestService/object'
 
 def handle_reply(msg):
     print(msg)
@@ -55,7 +56,7 @@ if __name__ == '__main__':
 
     bus = dbus.SessionBus()
     try:
-        object  = bus.get_object(DBUS_INTERFACE_NAME, "/com/example/TestService/object")
+        object  = bus.get_object(DBUS_INTERFACE_NAME, DBUS_OBJECT_PATH)
 
         object.connect_to_signal("HelloSignal", hello_signal_handler, dbus_interface=DBUS_INTERFACE_NAME, arg0="Hello")
     except dbus.DBusException:

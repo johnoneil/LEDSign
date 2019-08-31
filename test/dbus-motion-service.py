@@ -13,9 +13,10 @@ python example-signal-recipient.py --exit-service
 """
 
 DBUS_INTERFACE_NAME = 'com.example.TestService'
+DBUS_OBJECT_PATH = '/com/example/TestService/object'
 
 class TestObject(dbus.service.Object):
-    def __init__(self, conn, object_path='/com/example/TestService/object'):
+    def __init__(self, conn, object_path=DBUS_OBJECT_PATH):
         dbus.service.Object.__init__(self, conn, object_path)
 
     @dbus.service.signal(DBUS_INTERFACE_NAME)
