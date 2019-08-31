@@ -12,23 +12,23 @@ python example-signal-recipient.py
 python example-signal-recipient.py --exit-service
 """
 
-DBUS_INTERFACE_NAME = 'com.example.TestService'
-DBUS_OBJECT_PATH = '/com/example/TestService/object'
+DBUS_INTERFACE_NAME = 'com.MotionDetectService'
+DBUS_OBJECT_PATH = '/com/motiondetect/object'
 
-class TestObject(dbus.service.Object):
+class MotionDetectObject(dbus.service.Object):
     def __init__(self, conn, object_path=DBUS_OBJECT_PATH):
         dbus.service.Object.__init__(self, conn, object_path)
 
     @dbus.service.signal(DBUS_INTERFACE_NAME)
-    def HelloSignal(self, message):
+    def MotionDetectSignal(self, message):
         # The signal is emitted when this method exits
         # You can have code here if you wish
         pass
 
     @dbus.service.method(DBUS_INTERFACE_NAME)
-    def emitHelloSignal(self):
+    def emitMotionDetectSignal(self):
         #you emit signals by calling the signal's skeleton method
-        self.HelloSignal('Hello')
+        self.MotionDetectSignal('Hello')
         return 'Signal emitted'
 
     @dbus.service.method(DBUS_INTERFACE_NAME,
@@ -41,7 +41,7 @@ if __name__ == '__main__':
 
     session_bus = dbus.SessionBus()
     name = dbus.service.BusName(DBUS_INTERFACE_NAME, session_bus)
-    object = TestObject(session_bus)
+    object = MotionDetectObject(session_bus)
 
     #loop = gobject.MainLoop()
     # Initialize a main loop
