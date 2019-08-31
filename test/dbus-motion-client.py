@@ -13,37 +13,7 @@ python example-signal-recipient.py
 python example-signal-recipient.py --exit-service
 """
 
-# Copyright (C) 2004-2006 Red Hat Inc. <http://www.redhat.com/>
-# Copyright (C) 2005-2007 Collabora Ltd. <http://www.collabora.co.uk/>
-#
-# Permission is hereby granted, free of charge, to any person
-# obtaining a copy of this software and associated documentation
-# files (the "Software"), to deal in the Software without
-# restriction, including without limitation the rights to use, copy,
-# modify, merge, publish, distribute, sublicense, and/or sell copies
-# of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be
-# included in all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-# NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
-# HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-# WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-# DEALINGS IN THE SOFTWARE.
-
-# import sys
-# import traceback
-
-# from gi.repository import GObject as gobject
-# #import gobject
-
-# import dbus
-# import dbus.mainloop.glib
+DBUS_INTERFACE_NAME = 'com.example.TestService'
 
 def handle_reply(msg):
     print(msg)
@@ -53,13 +23,13 @@ def handle_error(e):
 
 def emit_signal():
    #call the emitHelloSignal method 
-   object.emitHelloSignal(dbus_interface="com.example.TestService")
+   object.emitHelloSignal(dbus_interface=DBUS_INTERFACE_NAME)
                           #reply_handler = handle_reply, error_handler = handle_error)
    # exit after waiting a short time for the signal
    gobject.timeout_add(2000, loop.quit)
 
    if sys.argv[1:] == ['--exit-service']:
-      object.Exit(dbus_interface='com.example.TestService')
+      object.Exit(dbus_interface=DBUS_INTERFACE_NAME)
 
    return False
 
@@ -77,7 +47,7 @@ def catchall_hello_signals_handler(hello_string):
     print ("Received a hello signal and it says " + hello_string)
     
 def catchall_testservice_interface_handler(hello_string, dbus_message):
-    print("com.example.TestService interface says " + hello_string + " when it sent signal " + dbus_message.get_member())
+    print(DBUS_INTERFACE_NAME + " interface says " + hello_string + " when it sent signal " + dbus_message.get_member())
 
 
 if __name__ == '__main__':
@@ -85,9 +55,9 @@ if __name__ == '__main__':
 
     bus = dbus.SessionBus()
     try:
-        object  = bus.get_object("com.example.TestService","/com/example/TestService/object")
+        object  = bus.get_object(DBUS_INTERFACE_NAME, "/com/example/TestService/object")
 
-        object.connect_to_signal("HelloSignal", hello_signal_handler, dbus_interface="com.example.TestService", arg0="Hello")
+        object.connect_to_signal("HelloSignal", hello_signal_handler, dbus_interface=DBUS_INTERFACE_NAME, arg0="Hello")
     except dbus.DBusException:
         traceback.print_exc()
         print(usage)
@@ -96,9 +66,9 @@ if __name__ == '__main__':
     #lets make a catchall
     bus.add_signal_receiver(catchall_signal_handler, interface_keyword='dbus_interface', member_keyword='member')
 
-    bus.add_signal_receiver(catchall_hello_signals_handler, dbus_interface = "com.example.TestService", signal_name = "HelloSignal")
+    bus.add_signal_receiver(catchall_hello_signals_handler, dbus_interface = DBUS_INTERFACE_NAME, signal_name = "HelloSignal")
 
-    bus.add_signal_receiver(catchall_testservice_interface_handler, dbus_interface = "com.example.TestService", message_keyword='dbus_message')
+    bus.add_signal_receiver(catchall_testservice_interface_handler, dbus_interface = DBUS_INTERFACE_NAME, message_keyword='dbus_message')
 
     # Tell the remote object to emit the signal after a short delay
     gobject.timeout_add(2000, emit_signal)
