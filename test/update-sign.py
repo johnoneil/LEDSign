@@ -20,7 +20,7 @@ import feedparser
 from weather import Weather, Unit
 
 def generateTimeScreen():
-  return TextFile('{pause=6}{middle}{center}{nonein}{noneout}{amber}{7x6}{dow_abbr}, {month_abbr} {date} {yyyy}{nl}{b16x12}{green}{hhmin_12hr}', "AB.nmg", drive='D')
+  return TextFile('{pause=6}{middle}{center}{nonein}{noneout}{amber}{7x6}{dow_abbr}, {month_abbr} {date} {yyyy}{nl}{font4}{green}{hhmin_12hr}', "AB.nmg", drive='D')
 
 
 def generateWeatherFeed():
@@ -80,7 +80,7 @@ def generateDrudgeFeed():
     except Exception as exception:
       h3 = "Headline 3 Error"
       error = True
-    out = TextFile('{pause=0}{middle}{moveLeftIn}{moveLeftOut}{font3}{green}{typesetoff}DRUDGE REPORT: {amber}{16x9}%s %s %s' % (h1, h2, h3), "AD.nmg", drive='D')
+    out = TextFile('{pause=0}{middle}{moveLeftIn}{moveLeftOut}{font4}{green}{typesetoff}DRUDGE REPORT: {amber}{16x9}%s %s %s' % (h1, h2, h3), "AD.nmg", drive='D')
     if not error:
       return out
     else:
