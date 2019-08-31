@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 
-# TODO: handle actual GPIO module on raspi
-#import RPi.GPIO as GPIO
-from EmulatorGUI import GPIO
+import os
+if os.uname()[1] == 'raspberrypi':
+    import RPi.GPIO as GPIO
+else:
+    from EmulatorGUI import GPIO
 
 import time
 import traceback
