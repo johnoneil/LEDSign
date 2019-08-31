@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 
 from EmulatorGUI import GPIO
-#from EmulatorGUI import GPIO
-#from GPIOSimulator import GPIO
-#import RPi.GPIO as GPIO
 import time
 import traceback
 
