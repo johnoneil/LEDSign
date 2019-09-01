@@ -5,7 +5,16 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Motion Sensor Service Test",
+      "name": "Motion Sensor Service",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/test/motion-sensor-gpio-service.py",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "env": {"PYTHONPATH":"~/Envs/ledsign"},
+    },
+    {
+      "name": "Motion Sensor Client Test",
       "type": "python",
       "request": "launch",
       "program": "${workspaceFolder}/test/motion-sensor-gpio-test.py",
