@@ -74,7 +74,7 @@ def checkGPIO(object):
     try:
         if not MOTION_SENSOR_PIN_HIGH and GPIO.input(MOTION_SENSOR_GPIO_PIN): # PIR motion sensor goes high
             MOTION_SENSOR_PIN_HIGH = True
-            print("Motion Detected...")
+            #print("Motion Detected...")
             emit_signal(object)
 
             # Optional buzzer output
