@@ -30,7 +30,7 @@ class MotionDetectObject(dbus.service.Object):
         dbus.service.Object.__init__(self, conn, object_path)
 
     @dbus.service.signal(DBUS_INTERFACE_NAME)
-    def MotionDetectSignal(self, message):
+    def MotionDetectSignal(self):
         # The signal is emitted when this method exits
         # You can have code here if you wish
         pass
@@ -42,7 +42,7 @@ class MotionDetectObject(dbus.service.Object):
         want a "motion detected" event to be propagated to all subscribers
         '''
         #you emit signals by calling the signal's skeleton method
-        self.MotionDetectSignal('Hello')
+        self.MotionDetectSignal()
         return 'Signal emitted'
 
     @dbus.service.method(DBUS_INTERFACE_NAME,
@@ -57,11 +57,7 @@ class MotionDetectObject(dbus.service.Object):
 
 def emit_signal(object):
    object.emitMotionDetectSignal()
-
    return False
-
-def catchall_motiondetect_signals_handler(hello_string):
-    print ("Received a hello signal and it says " + hello_string)
 
 def init_gpio():
     GPIO.setmode(GPIO.BCM)
