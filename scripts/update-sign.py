@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# vim: set ts=2 expandtab:
 
 #******************************************************************************
 # Update my sign with muh stuff
@@ -13,6 +12,9 @@ from JetFileII import PictureFile
 from JetFileII import SEQUENTSYS
 displayMsg = Message.DisplayControlWithoutChecksum
 import time
+
+from config import PORT
+from config import BAUD_RATE
 
 import requests
 import json
@@ -97,12 +99,7 @@ if True:
   files.append(generateBTCScreen())
   files.append(generateDrudgeFeed())
 
-
-#port = '/dev/ttyUSB0'
-port = '/dev/ttyACM0'
-#port = '/dev/ttyVIRTUAL'
-baudRate = 19200
-ser = serial.Serial(port, baudRate)
+ser = serial.Serial(PORT, BAUD_RATE)
 
 # Had some issues updating sign directly from /dev/ttyACM0
 # This appears to fix it and allow me to remove sleep() calls

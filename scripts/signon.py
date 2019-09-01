@@ -4,13 +4,12 @@
 import serial
 from JetFileII import Message
 
+from config import PORT
+from config import BAUD_RATE
+
 msg = Message.TurnSignOn()
 
-#port = '/dev/ttyUSB0'
-port = '/dev/ttyACM0'
-#port = '/dev/ttyVIRTUAL'
-baudRate = 19200
-ser = serial.Serial(port, baudRate)
+ser = serial.Serial(PORT, BAUD_RATE)
 x = ser.write(msg)
 
 resp = ser.read()

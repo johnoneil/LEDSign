@@ -5,16 +5,12 @@ import serial
 from serial import rs485
 from JetFileII import Message
 
+from config import PORT
+from config import BAUD_RATE
 
 msg = Message.TurnSignOff(goodbyeMsg=False)
 
-#port = '/dev/ttyUSB0'
-port = '/dev/ttyACM0'
-#port = '/dev/ttyVIRTUAL'
-#baudRate = 9600 #19200
-baudRate = 19200
-
-ser = serial.Serial(port, baudRate)
+ser = serial.Serial(PORT, BAUD_RATE)
 x = ser.write(msg)
 
 resp = ser.read()
