@@ -4,7 +4,7 @@ import os
 if os.uname()[1] == 'raspberrypi':
     import RPi.GPIO as GPIO
 else:
-    from EmulatorGUI import GPIO
+    from EmulatorGUI.EmulatorGUI import GPIO
 
 import time
 import traceback

@@ -8,7 +8,7 @@
       "name": "Motion Sensor Service",
       "type": "python",
       "request": "launch",
-      "program": "${workspaceFolder}/test/motion-sensor-gpio-service.py",
+      "program": "${workspaceFolder}/scripts/motion-sensor-gpio-service.py",
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal",
       "env": {"PYTHONPATH":"~/Envs/ledsign"},
