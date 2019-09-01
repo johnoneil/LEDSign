@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# vim: set ts=2 expandtab:
 
 import serial
 from serial import rs485
