@@ -4,6 +4,7 @@
   // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
   "version": "0.2.0",
   "configurations": [
+
     {
       "name": "Motion Sensor Service",
       "type": "python",
@@ -36,6 +37,16 @@
       "type": "python",
       "request": "launch",
       "program": "${workspaceFolder}/test/ledsign.py",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "env": {"PYTHONPATH":"${workspaceRoot}"},
+      
+    },
+    {
+      "name": "update sign",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/scripts/update-sign.py",
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal",
       "env": {"PYTHONPATH":"${workspaceRoot}"},

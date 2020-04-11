@@ -15,11 +15,12 @@ import time
 
 from config import PORT
 from config import BAUD_RATE
+from config import OPEN_WEATHER_MAP_API_KEY
 
 import requests
 import json
 import feedparser
-from weather import Weather, Unit
+#from weather import Weather, Unit
 
 def generateTimeScreen():
   return TextFile('{pause=6}{middle}{center}{nonein}{noneout}{amber}{7x6}{dow_abbr}, {month_abbr} {date} {yyyy}{nl}{font4}{green}{hhmin_12hr}', "AB.nmg", drive='D')
@@ -33,12 +34,19 @@ def generateWeatherFeed():
   # state = location['state']
   # print("weather for " + city + ", " + state)
   # don't know if the following url is static, but we can find it via the code above
-  r2 = requests.get('https://api.weather.gov/gridpoints/VEF/114,96/forecast')
-  json2 = r2.json()
-  f1 = json2['properties']['periods'][0]
-  f1s = '{font3}{green}Weather:{nl}{s1}{green}{time} {amber}{red}{temp}{nl}{amber}{forecast}'.format(font3='{font3}', s1='{7x6}',green='{green}', red='{red}', time=f1["name"], amber='{amber}', temp=f1["temperature"], nl="{nl}", forecast=f1["shortForecast"])
-  f2 = json2['properties']['periods'][1]
-  f2s = '{font3}{amber}Weather:{nl}{s1}{green}{time} {amber}{red}{temp}{nl}{amber}{forecast}'.format(font3='{font3}', s1='{7x6}',green='{green}', red='{red}', time=f2["name"], amber='{amber}', temp=f2["temperature"], nl="{nl}", forecast=f2["shortForecast"])
+  #r2 = requests.get('https://api.weather.gov/gridpoints/VEF/114,96/forecast')
+  #lat='36.1211'
+  #lon='-115.3508'
+  #r = requests.get('https://api.openweathermap.org/data/2.5/onecall?lat={lat}&lon={lon}&appid={KEY}'.format(lat=lat, lon=lon, KEY=OPEN_WEATHER_MAP_API_KEY))
+  r = requests.get('http://api.openweathermap.org/data/2.5/weather?q=Las%20Vegas,us&APPID={APP_ID}'.format(APP_ID=OPEN_WEATHER_MAP_API_KEY))
+  json2 = r.json()
+  temp = json2['main']['temp']
+  tempf = int(temp * 9/5 - 459.67)
+  desc = json2['weather'][0]['description']
+  #f1 = json2['properties']['periods'][0]
+  f1s = '{font3}{green}Weather:{nl}{s1}{green}{time} {amber}{red}{temp}{nl}{amber}{forecast}'.format(font3='{font3}', s1='{7x6}',green='{green}', red='{red}', time='now', amber='{amber}', temp=str(tempf), nl="{nl}", forecast=desc)
+  #f2 = json2['properties']['periods'][1]
+  f2s = '{font3}{amber}Weather:{nl}{s1}{green}{time} {amber}{red}{temp}{nl}{amber}{forecast}'.format(font3='{font3}', s1='{7x6}',green='{green}', red='{red}', time='now', amber='{amber}', temp=str(tempf), nl="{nl}", forecast=desc)
   #f3 = json2['properties']['periods'][2]
   #f3s = '{s1}{green}{time}: {amber}{red}{temp}{nl}{amber}{forecast}'.format(s1='{7x6}',green='{green}', red='{red}', time=f3["name"], amber='{amber}', temp=f3["temperature"], nl="{nl}", forecast=f3["shortForecast"])
   #print("Forecast: " + f1["name"] + " temp: " + str(one["temperature"]) + " forecast: " + one["shortForecast"])
@@ -46,10 +54,11 @@ def generateWeatherFeed():
 
 def generateBTCScreen():
   r = requests.get('https://api.coinmarketcap.com/v2/ticker/1/')
+  r = requests.get('https://api.coindesk.com/v1/bpi/currentprice.json')
   jsonObject = r.json()
-  btcprice = int(jsonObject["data"]["quotes"]["USD"]["price"])
-  percent_change_24h = float(jsonObject["data"]["quotes"]["USD"]["percent_change_24h"])
-  percent_change_7d = float(jsonObject["data"]["quotes"]["USD"]["percent_change_7d"])
+  btcprice = int(jsonObject["bpi"]["USD"]["rate_float"])
+  percent_change_24h = 0 #float(jsonObject["data"]["quotes"]["USD"]["percent_change_24h"])
+  percent_change_7d = 0 #float(jsonObject["data"]["quotes"]["USD"]["percent_change_7d"])
   color24 = '{green}'
   color7d = '{green}'
   if percent_change_24h < 0 :
@@ -94,7 +103,7 @@ def generateDrudgeFeed():
 files = []
 if True:
   files.append(generateTimeScreen())
-  #files.append(PictureFile('../images/awesome.bmp', 'sugoi.bmp', 'E'))
+  #files.append(PictureFile('images/awesome.bmp', 'sugoi.bmp', 'E'))
   files.append(generateWeatherFeed())
   files.append(generateBTCScreen())
   files.append(generateDrudgeFeed())

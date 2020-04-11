@@ -4,6 +4,8 @@ Import this file for current serial port settings
 
 #TODO: allow env variables to override these so no code changes needed
 
+OPEN_WEATHER_MAP_API_KEY='72be76e2d922e36ab8e1537afa9fead8'
+
 PORT = '/dev/ttyACM0'
 #PORT = '/dev/ttyUSB0'
 #port = '/dev/ttyVIRTUAL'
