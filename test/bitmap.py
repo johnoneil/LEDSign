@@ -43,7 +43,7 @@ else:
   msgs = []
   msg = Message.UploadSmallPicture(data,partition='E', msgId=1)
 
-port = '/dev/ttyUSB0'
+port = '/dev/ttyACM0'
 baudRate = 19200
 
 ser = serial.Serial(port, baudRate)

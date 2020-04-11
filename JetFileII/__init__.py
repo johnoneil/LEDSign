@@ -6,7 +6,7 @@
 # the Sigma 3000 LED control sofware.
 #
 #
-VERSION = '2.7'
 
-from JetFileIIProtocol import *
+# use relative path to JetFileIIProtocol.py for python3 compat
+from .JetFileIIProtocol import *
 

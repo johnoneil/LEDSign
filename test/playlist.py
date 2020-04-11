@@ -26,10 +26,13 @@ write_playlist = True
 files = []
 
 if write_files:
-  files.append(TextFile('{pause=5}{middle}{moveRightIn}{moveLeftOut}{b16x12}{green}{hhmin_12hr}{nl}{amber}{7x6}{dow_abbr}, {month_abbr} {date} {yyyy}', "AB.nmg", drive='D'))
-  files.append(PictureFile('../images/awesome.bmp', 'sugoi.bmp', 'D'))
+  files.append(TextFile('{pause=5}{middle}{moveRightIn}{moveRightOut}{b16x12}{green}{hhmin_12hr}{nl}{amber}{7x6}{dow_abbr}, {month_abbr} {date} {yyyy}', "AB.nmg", drive='D'))
+  #files.append(PictureFile('../images/awesome.bmp', 'sugoi.bmp', 'D'))
+  #files.append(PictureFile('../images/coin.bmp', 'c', 'D'))
   #files.append(PictureFile('../images/g.bmp', 'newg1.bmp', 'D'))
-  files.append(TextFile('{pause=1}{green}{5x5}{moveLeftIn}{moveRightOut}Playlist Entry 2', 'AC.nmg', drive='D'))
+  files.append(TextFile('{radarin}{radarout}\x14DD{middle}{green}{b16x12}{halfspace}$11,700{7x6}{green}+7%{nl}{amber}BTC {dd-mm-yy}', 'AC.nmg', drive='D'))
+  #files.append(TextFile('{middle}{left}{green}{b16x12}$10,600', 'AC.nmg', drive='D'))
+  #files.append(TextFile('{pause=1}{green}{5x5}{moveLeftIn}{moveRightOut}Playlist Entry 2', 'AC.nmg', drive='D'))
   #files.append(TextFile('{pause=1}{red}{5x5}{moverightin}{moveRightOut}Playlist Entry 3', 'AD.nmg', drive='D'))
   #files.append(TextFile('{pause=1}{amber}{5x5}{moverightin}{moveRightOut}Playlist Entry 4', 'AE.nmg', drive='D'))
   #files.append(PictureFile('../images/g.bmp', 'myg.bmp', 'D'))
@@ -41,6 +44,14 @@ if write_files:
 port = '/dev/ttyVIRTUAL'
 baudRate = 19200
 ser = serial.Serial(port, baudRate)
+
+
+# upload an image used in a text file (inline, so label is ONE character)
+coinpic = PictureFile('../images/coins.bmp', 'D', 'D')
+for packetNumber in range(0,coinpic.numPackets):
+  print("Writing image " + coinpic.label + " do drive: " + coinpic.drive + " packet number: " + str(packetNumber))
+  ser.write(Message.WritePictureFileWithChecksum(coinpic, packetNumber=packetNumber))
+  time.sleep(1)
 
 if write_files:
   for f in files:

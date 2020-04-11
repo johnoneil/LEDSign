@@ -252,26 +252,27 @@ class Picture:
   
 
 class Font:
-  n5x5 = '\x1a0'
-  n7x6 = '\x1a1'
-  n14x8 = '\x1a2'
-  n15x9 = '\x1a3'
-  n16x9 = '\x1a4'
-  n24x16 = '\x1a6'
-  n11x9 = '\x1a:'
-  n12x7 = '\x1a;'
-  n22x18 = '\x1a<'
-  n30x18 = '\x1a+'
-  n40x21 = '\x1a>'
-  b14x10 = '\x1aN'
-  b15x10 = '\x1aO'
-  b16x12 = '\x1aP'
-  b24x8 = '\x1aQ'
-  b32x8 ='\x1aR'
-  b11x7 = '\x1aS'
-  b12x7 = '\x1aT'
-  b22x12 = '\x1aU'
-  b40x21 = '\x1aV'
+  n5x5 = '\x1a0' # C:\FONT\NORMAL5.FNT
+  n7x6 = '\x1a1' # C:\FONT\NORMAL7.FNT
+  n14x8 = '\x1a2' # C:\FONT\NORMAL14.FNT
+  n15x9 = '\x1a3' # C:\FONT\NORMAL15.FNT
+  n16x9 = '\x1a4' # C:\FONT\NORMAL16.FNT
+  n24x16 = '\x1a6' # C:\FONT\NORMAL24.FNT
+  n32x18 = '\x1a8' # C:\FONT\NORMAL32.FNT
+  n11x9 = '\x1a:' # C:\FONT\NORMAL11.FNT
+  n12x7 = '\x1a;' # LACKING
+  n22x18 = '\x1a<' # C:\FONT\NORMAL22.FNT
+  n30x18 = '\x1a=' # C:\FONT\NORMAL30.FNT
+  n40x21 = '\x1a>' # C:\FONT\NORMAL40.FNT
+  b14x10 = '\x1aN' # C:\FONT\BOLD14.FNT
+  b15x10 = '\x1aO' # C:\FONT\BOLD15.FNT
+  b16x12 = '\x1aP' # C:\FONT\BOLD16.FNT
+  b24x8 = '\x1aQ' # LACKING
+  b32x8 ='\x1aR' # LACKING
+  b11x7 = '\x1aS' # LACKING
+  b12x7 = '\x1aT' # LACKING
+  b22x12 = '\x1aU' # LACKING
+  b40x21 = '\x1aV' # LACKING
   class Color:
     Black = '\x1c\x30'
     Red = '\x1c\x31'
@@ -942,6 +943,8 @@ class Markup:
     'fastest' : Animate.Speed.Fastest,
     'nonein' : Animate.Jump.In,
     'noneout' : Animate.Jump.Out,
+    'randomin' : Animate.Random.In,
+    'randomout' : Animate.Random.Out,
     'moveleftin' : Animate.MoveLeft.In,
     'moveleftout' : Animate.MoveLeft.Out,
     'moverightin' : Animate.MoveRight.In,
@@ -1026,13 +1029,27 @@ class Markup:
     'growingupout' : Animate.GrowingUp.Out,
     '5x5' : Font.n5x5,
     '7x6' : Font.n7x6,
-    '12x7' : Font.n12x7,
+    '14x8' : Font.n14x8,
+    '15x9' : Font.n11x9,
     '16x9' : Font.n16x9,
+    '24x16': Font.n24x16,
+    '32x18': Font.n32x18,
+    '11x9' : Font.n11x9,
     '22x18' : Font.n22x18,
-    'b12x7' : Font.b12x7,
-    'b16x12' : Font.b16x12,
-    'b22x12' : Font.b22x12,
-    'b32x8' : Font.b32x8,
+    '30x18' : Font.n30x18,
+    '40x21' : Font.n40x21,
+    'b14x10':Font.b14x10,
+    'b15x10':Font.b15x10,
+    'b16x12':Font.b16x12,
+    'font1' : '\x1aa',
+    'font2' : '\x1ab',
+    'font3' : '\x1ac',
+    'font4' : '\x1ad',
+    'font5' : '\x1ae',
+    'font6' : '\x1af',
+    'font7' : '\x1ag',
+    'font8' : '\x1ah',
+    'font9' : '\x1ai',
     'mm/dd/yy':Date.MMDDYY.WithForwardSlashes,
     'mm-dd-yy':Date.MMDDYY.WithDashes,
     'mm.dd.yy':Date.MMDDYY.WithDots,

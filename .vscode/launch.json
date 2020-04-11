@@ -4,11 +4,49 @@
   // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
   "version": "0.2.0",
   "configurations": [
+
+    {
+      "name": "Motion Sensor Service",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/scripts/motion-sensor-gpio-service.py",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "env": {"PYTHONPATH":"~/Envs/ledsign"},
+    },
+    {
+      "name": "Motion Sensor LED sign control",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/scripts/motion-sensor-sign-control.py",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "env": {"PYTHONPATH":"~/Envs/ledsign"},
+    },
+    {
+      "name": "Motion Sensor Client Test",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/test/motion-sensor-gpio-test.py",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "env": {"PYTHONPATH":"~/Envs/ledsign"},
+    },
     {
       "name": "Led sign test",
       "type": "python",
       "request": "launch",
       "program": "${workspaceFolder}/test/ledsign.py",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "env": {"PYTHONPATH":"${workspaceRoot}"},
+      
+    },
+    {
+      "name": "update sign",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/scripts/update-sign.py",
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal",
       "env": {"PYTHONPATH":"${workspaceRoot}"},
