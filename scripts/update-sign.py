@@ -50,6 +50,8 @@ def generateWeatherFeed():
   #f3 = json2['properties']['periods'][2]
   #f3s = '{s1}{green}{time}: {amber}{red}{temp}{nl}{amber}{forecast}'.format(s1='{7x6}',green='{green}', red='{red}', time=f3["name"], amber='{amber}', temp=f3["temperature"], nl="{nl}", forecast=f3["shortForecast"])
   #print("Forecast: " + f1["name"] + " temp: " + str(one["temperature"]) + " forecast: " + one["shortForecast"])
+  print("temf: " + str(tempf))
+  print("desc: " + desc)
   return TextFile('{pause=2}{randomin}{randomout}{fastest}%s{newframe}%s' % ( f1s, f2s ), "AW.nmg", drive='D')
 
 def generateBTCScreen():
@@ -68,6 +70,30 @@ def generateBTCScreen():
   change24 = '{color}{value:+.1f}'.format(color=color24, value=percent_change_24h)
   change7d = '{color}{value:+.1f}'.format(color=color7d, value=percent_change_7d)
   return TextFile('{wipeupwardin}{wipeupwardout}\x14DD{middle}%s{b16x12}{halfspace}$%s{nl}{7x6}{amber}BTC %sd %sw' % ( color24, '{:,d}'.format(btcprice), change24, change7d ), 'AC.nmg', drive='D')
+
+def generateDailyCallerFeedWorld():
+  d = feedparser.parse('http://dailycaller.com/section/world/feed')
+  #print(str(d))
+  h1 = d['entries'][0]['title'].encode("ascii","ignore").strip()
+  print(h1)
+  h2 = d['entries'][1]['title'].encode("ascii","ignore").strip()
+  print(h2)
+  h3 = d['entries'][2]['title'].encode("ascii","ignore").strip()
+  print(h3)
+  out = TextFile('{pause=0}{middle}{moveLeftIn}{moveLeftOut}{font4}{green}{typesetoff}DAILY CALLER WORLD: {amber}{16x9}%s...%s...%s' % (h1, h2, h3), "AD.nmg", drive='D')
+  return out
+
+def generateDailyCallerPolitics():
+  d = feedparser.parse('http://dailycaller.com/section/politics/feed')
+  #print(str(d))
+  h1 = d['entries'][0]['title'].encode("ascii","ignore").strip()
+  print(h1)
+  h2 = d['entries'][1]['title'].encode("ascii","ignore").strip()
+  print(h2)
+  h3 = d['entries'][2]['title'].encode("ascii","ignore").strip()
+  print(h3)
+  out = TextFile('{pause=0}{middle}{moveLeftIn}{moveLeftOut}{font4}{green}{typesetoff}DAILY CALLER POL: {amber}{16x9}%s...%s...%s' % (h1, h2, h3), "AD.nmg", drive='D')
+  return out
 
 def generateDrudgeFeed():
   maxTries = 4
@@ -105,8 +131,12 @@ if True:
   files.append(generateTimeScreen())
   #files.append(PictureFile('images/awesome.bmp', 'sugoi.bmp', 'E'))
   files.append(generateWeatherFeed())
+  files.append(generateTimeScreen())
+  files.append(generateDailyCallerFeedWorld())
+  files.append(generateTimeScreen())
   files.append(generateBTCScreen())
-  files.append(generateDrudgeFeed())
+  #files.append(generateTimeScreen())
+  #files.append(generateDailyCallerPolitics())
 
 ser = serial.Serial(PORT, BAUD_RATE)
 
