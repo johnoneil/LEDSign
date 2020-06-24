@@ -200,8 +200,10 @@ class Format:
     #e.g. 'hello {Format.NewLine} There' will insert Format.NewLine binary in place of curly brackets markup.
     def ReplaceMarkupTagWithArg(match):
       code = match.group(1).strip().lower()
-      arg = match.group(2).strip().lower()
+      arg = match.group(2).strip().lower().split(',')
       #print "code: " + code +" arg: " + arg
+      if(len(arg) == 1):
+        arg = arg[0]
       if code in Markup.Registry:
         #pass
         return Markup.Registry[code](arg)
@@ -278,6 +280,17 @@ class Font:
     Red = '\x1c\x31'
     Green = '\x1c\x32'
     Amber = '\x1c\x33'
+
+    @staticmethod
+    def CustomBGR(bgr):
+      b = min(int(bgr[0]) , 255)
+      g = min(int(bgr[1]) , 255)
+      r = min(int(bgr[2]) , 255)
+      return "\x1C\x2F" + pack("BBB" , b,g,r)
+    @staticmethod
+    def CustomRGB(rgb):
+      return Font.Color.CustomBGR([rgb[2] , rgb[1] , rgb[0]])
+
     class Mixed:
       Characters = '\x1c\x34'
       Horizontal = '\x1c\x35'
@@ -923,6 +936,8 @@ class Markup:
     'halfspace' : Format.Halfspace,
     'flashon' : Format.Flash.On,
     'flashoff' : Format.Flash.Off,
+    'font_bgr': Font.Color.CustomBGR,
+    'font_rgb': Font.Color.CustomRGB,
     'red' : Font.Color.Red,
     'green' : Font.Color.Green,
     'amber' : Font.Color.Amber,
@@ -962,7 +977,7 @@ class Markup:
     'shuttlefromleftrightin' : Animate.ShuttleFromLeftRight.In,
     'shuttlefromupdownin' : Animate.ShuttleFromUpDown.In,
     'peeloffleftin' : Animate.PeelOffLeft.In,
-    'peeloffright' : Animate.PeelOfRight.In,
+    'peeloffrightin' : Animate.PeelOfRight.In,
     'shutterfromupdownin' : Animate.ShutterFromUpDown.In,
     'shutterfromleftrightin' : Animate.ShutterFromLeftRight.In,
     'raindropsin' : Animate.Raindrops.In,
@@ -1001,7 +1016,7 @@ class Markup:
     'shuttlefromleftrightout' : Animate.ShuttleFromLeftRight.Out,
     'shuttlefromupdownout' : Animate.ShuttleFromUpDown.Out,
     'peeloffleftout' : Animate.PeelOffLeft.Out,
-    'peeloffright' : Animate.PeelOfRight.Out,
+    'peeloffrightout' : Animate.PeelOfRight.Out,
     'shutterfromupdownout' : Animate.ShutterFromUpDown.Out,
     'shutterfromleftrightout' : Animate.ShutterFromLeftRight.Out,
     'raindropsout' : Animate.Raindrops.Out,
